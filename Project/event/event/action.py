@@ -26,5 +26,6 @@ class FileProcess(QWidget):
     def saveFile(self, component: QTextEdit):
         f = open(self.fname, "w", encoding='utf-8')
         f.write(component.toPlainText())
+        f.close()
 
 
