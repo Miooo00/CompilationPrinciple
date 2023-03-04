@@ -9,25 +9,36 @@ def recognize(src, s, i):
     state = 0
     index = i
     start = s
+    length = len(src)
     while state != 3:
-        if len(src)-1 == index:
-            break
+        # if len(src)-1 == index:
+        #     break
         if state == 0:
+            print(src[index], index)
             if str.isalpha(src[index]):
                 state = 1
             elif str.isdigit(src[index]):
                 state = 2
             else:
-                start += 1
-            index += 1
+                if index < length-1:
+                    start += 1
+                    index += 1
+                else:
+                    state = 3
         elif state == 1:
-            if str.isalpha(src[index]):
+            if index == length - 1:
+                state = 3
+                syn = 700
+            elif index < length and str.isalpha(src[index]):
                 index += 1
             else:
                 state = 3
                 syn = 700
         elif state == 2:
-            if str.isdigit(src[index]):
+            if index == length - 1:
+                state = 3
+                syn = 400
+            elif index < length and str.isdigit(src[index]):
                 index += 1
             else:
                 state = 3
@@ -43,6 +54,7 @@ def find_all(src):
     start = index = 0
     while index != len(src)-1:
         index, item, code = recognize(src, start, index)
+        print(item)
         start = index
         res.append([item, code])
     return res
