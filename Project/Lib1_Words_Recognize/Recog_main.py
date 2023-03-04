@@ -1,4 +1,4 @@
-from Readcategory import rCategory
+from Project.Lib1_Words_Recognize.Readcategory import rCategory
 
 c_dict = rCategory()
 path = './Test'
@@ -61,27 +61,28 @@ def find_all(src):
     # print(res)
 
 
-
-
-def operate_file(path):
-    with open(path, 'r', encoding='utf-8') as fp:
-        content = fp.readlines()
+def entry(content):
+    # with open(path, 'r', encoding='utf-8') as fp:
+    #     content = fp.readlines()
+    content = content.split('\n')
     row_c = 0
     info = []
     for line in content:
-        items = find_all(line)
-        for item in items:
-            c = str(item[1])
-            if c in c_dict:
-                info.append([c, c_dict[c], item[0], row_c])
-            else:
-                info.append([-1, 'none', item[0], row_c])
+        if line:
+            items = find_all(line)
+            for item in items:
+                c = str(item[1])
+                if c in c_dict:
+                    info.append([c, c_dict[c], item[0], row_c])
+                else:
+                    info.append([-1, 'none', item[0], row_c])
         row_c += 1
     for l in info:
         print(l)
+    return info
 
 
 # chracters = find_all('%^*abc((aac&ssd123//123')
-operate_file(path)
+# operate_file(path)
 
 

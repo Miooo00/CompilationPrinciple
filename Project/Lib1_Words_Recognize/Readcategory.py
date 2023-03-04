@@ -1,6 +1,5 @@
 
-
-cPath = './Category'
+cPath = '../Lib1_Words_Recognize/Category'
 
 def rCategory():
     c_dict = {}
