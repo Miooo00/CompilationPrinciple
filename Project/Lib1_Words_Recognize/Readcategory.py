@@ -1,6 +1,7 @@
 
 cPath = '../Lib1_Words_Recognize/Category'
 
+
 def rCategory():
     c_dict = {}
     with open(cPath, 'r', encoding='utf-8') as fp:
@@ -8,7 +9,5 @@ def rCategory():
         for line in lines:
             div = line.split(' ')
             c_dict[div[0]] = div[1].strip()
-    print(c_dict)
     return c_dict
 
-# rCategory()

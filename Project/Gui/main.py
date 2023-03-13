@@ -2,7 +2,7 @@ import sys
 from PyQt5.QtWidgets import QMainWindow, QApplication, QFileDialog
 from PyQt5 import uic, QtCore
 from Project.Gui.func import read_file, save_file
-from Project.Lib1_Words_Recognize.Recog_main import entry
+from Project.Lib1_Words_Recognize.Recog_main import entry1
 
 
 class Gui:
@@ -14,6 +14,7 @@ class Gui:
         self.lib1_exebt = self.ui.lib1_exebt
         self.lib1_src_text = self.ui.lib1_src_text
         self.lib1_des_text = self.ui.lib1_des_text
+        self.lib1_des_text2 = self.ui.lib1_des_text2
         self.lib1_svpath = ''
         self.lib1_selbt.clicked.connect(self.button_fun1_1)
         self.lib1_exebt.clicked.connect(self.button_fun1_2)
@@ -37,17 +38,17 @@ class Gui:
 
     def button_fun1_2(self):
         if self.lib1_src_text.toPlainText():
-            items = entry(self.lib1_src_text.toPlainText())
-            str1 = ''
-            print(items)
-            for item in items:
-                for i in range(len(item)):
-                    if i != len(item)-1:
-                        str1 += str(item[i]) + ','
-                    else:
-                        str1 += str(item[i])
-                str1 += '\n'
-            self.lib1_des_text.setPlainText(str1)
+            items = entry1(self.lib1_src_text.toPlainText())
+            pos = ''
+            neg = ''
+            for line in items:
+                for i in line[0]:
+                    pos += str(i[1]) + ',' + i[0] + ',' + str(line[2]) + '\n'
+                for i in line[1]:
+                    if i:
+                        neg += i + '\n'
+            self.lib1_des_text.setPlainText(pos)
+            self.lib1_des_text2.setPlainText(neg)
         else:
             return
 

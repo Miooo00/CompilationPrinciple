@@ -33,7 +33,7 @@
       <x>300</x>
       <y>110</y>
       <width>271</width>
-      <height>291</height>
+      <height>151</height>
      </rect>
     </property>
     <property name="font">
@@ -118,6 +118,37 @@
     </property>
     <property name="text">
      <string>词法分析</string>
+    </property>
+   </widget>
+   <widget class="QPlainTextEdit" name="lib1_des_text2">
+    <property name="geometry">
+     <rect>
+      <x>300</x>
+      <y>270</y>
+      <width>271</width>
+      <height>131</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Adobe Fangsong Std</family>
+      <pointsize>9</pointsize>
+      <weight>50</weight>
+      <bold>false</bold>
+     </font>
+    </property>
+   </widget>
+   <widget class="Line" name="line_3">
+    <property name="geometry">
+     <rect>
+      <x>290</x>
+      <y>260</y>
+      <width>291</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
     </property>
    </widget>
   </widget>
