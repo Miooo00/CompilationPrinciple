@@ -1,5 +1,4 @@
 
-
 def read_dict():
     category = {}
     with open('../Lib1_Words_Recognize/Category', 'r', encoding='utf-8') as fp:
@@ -10,7 +9,8 @@ def read_dict():
     return category
 
 
-col = ['(', ')', '[', ']', '!', '*', '/', '%', '+', '-', '<', '>', '&', '|', '=', '.', ',', ';', '{', '}']
+col = ['(', ')', '[', ']', '!', '*', '/', '%', '+', '-', '<', '>', '&', '|', '=', '.', ',', ';', '{', '}', ' ']
+hex_c = ['a', 'b', 'c', 'd', 'e', 'f', 'A', 'B', 'C', 'D', 'E', 'F']
 cat = read_dict()
 
 
@@ -22,9 +22,16 @@ def digit_reg(src, i):
     :return: 种别码 识别的串
     """
     state = 0
+    if src[i] == '+' or src[i] == '-':
+        state = 18
+    elif str.isdigit(src[i]):
+        state = 0
     start = i
     while state != 4 and state != 7 and state != 13 and state != 14 and state != 15 and state != 16:
-        if state == 0:
+        if state == 18:
+            state = 0
+            i += 1
+        elif state == 0:
             if src[i] == '0':
                 state = 3
                 i += 1
@@ -43,12 +50,11 @@ def digit_reg(src, i):
                 i += 1
             elif src[i] in col:
                 state = 15
-                i += 1
             else:
                 state = 16
             pass
         elif state == 3:
-            if (src[i] != '8' or src[i] != '9') and str.isdigit(src[i]):
+            if (src[i] != '8' and src[i] != '9') and str.isdigit(src[i]):
                 state = 17
                 i += 1
             elif src[i] == 'x' or src[i] == 'X':
@@ -58,18 +64,21 @@ def digit_reg(src, i):
                 state = 8
                 i += 1
             else:
-                state = 15
+                state = 16
                 i += 1
             pass
         elif state == 17:
-            if (src[i] != '8' or src[i] != '9') and str.isdigit(src[i]):
+            if (src[i] != '8' and src[i] != '9') and str.isdigit(src[i]):
                 state = 17
+                i += 1
+            elif src[i] == '8' or src[i] == '9':
+                state = 16
                 i += 1
             else:
                 state = 4
                 i += 1
         elif state == 5:
-            if str.isdigit(src[i]) or str.isalpha(src[i]):
+            if str.isdigit(src[i]) or src[i] in hex_c:
                 state = 6
                 i += 1
             else:
@@ -138,7 +147,7 @@ def digit_reg(src, i):
         return syn, src[start:i - 1], i
     elif state == 15:
         syn = 400
-        return syn, src[start:i-1], i
+        return syn, src[start:i], i
     else:
         tail = i
         while tail < len(src) and src[tail] != ' ':
@@ -151,7 +160,7 @@ def word_reg(src, i):
     start = i
     while state != 2:
         if state == 0:
-            if str.isalpha(src[i]) or str[i] == '_':
+            if str.isalpha(src[i]) or src[i] == '_':
                 state = 1
                 i += 1
         elif state == 1:
@@ -191,7 +200,10 @@ def chr_cons_reg(src, i):
     res = src[start: i]
     if state == 3:
         return 500, res, i
+    elif state == 4:
+        return -3, res, i
 
+# print(chr_cons_reg("'abc' ", 0))
 
 def chrs_cons_reg(src, i):
     state = 0
@@ -221,34 +233,47 @@ def chrs_cons_reg(src, i):
         return 600, res, i
 
 
-def expl_div_reg(src, i):
-    state = 0
+def expl_div_reg(src, i, pre_state):
+    state = pre_state
     start = i
-    while state != 2 and state != 5:
+    while state != 2 and state != 5 and state != 6 and state != 7:
         if state == 0:
             if src[i] == '/':
                 state = 1
                 i += 1
         elif state == 1:
-            if str.isdigit(src[i]) or str.isalpha(src[i]):
+            if src[i] == '*':
+                state = 3
+                i += 1
+            else:
                 state = 2
                 i += 1
-            elif src[i] == '*':
-                state = 3
-                i += 1
         elif state == 3:
-            if src[i] != '*' and src[i] != '/':
-                state = 3
-                i += 1
-            elif src[i] == '*':
-                state = 4
+            if i < len(src):
+                if src[i] != '*':
+                    state = 3
+                    i += 1
+                elif src[i] == '*':
+                    state = 4
+                    i += 1
+                else:
+                    state = 6
+                    i += 1
+            else:
+                state = 7
                 i += 1
         elif state == 4:
             if src[i] == '*':
+                state = 4
+                i += 1
+            elif src[i] != '*' and src[i] != '/':
                 state = 3
                 i += 1
             elif src[i] == '/':
                 state = 5
+                i += 1
+            else:
+                state = 6
                 i += 1
 
     if state == 2:
@@ -257,7 +282,90 @@ def expl_div_reg(src, i):
     elif state == 5:
         res = src[start: i]
         return 900, res, i
+    elif state == 6:
+        res = src[start: i]
+        return -2, res, i
+    elif state == 7:
+        res = src[start: i]
+        return -9, res, i
 
+
+def sig_reg(src, i):
+    state = 0
+    start = i
+    while state != 2 and state != 4 and state != 5 and state != 6:
+        if state == 0:
+            if src[i] == '>':
+                state = 1
+                i += 1
+        elif state == 1:
+            if src[i] == '=':
+                state = 2
+                i += 1
+            elif src[i] == '>':
+                state = 3
+                i += 1
+            else:
+                state = 6
+                i += 1
+        elif state == 3:
+            if src[i] == '=':
+                state = 4
+                i += 1
+            else:
+                state = 5
+                i += 1
+    if state == 2:
+        res = src[start: i]
+        return 214, res, i
+    elif state == 4:
+        res = src[start: i]
+        return 221, res, i
+    elif state == 5:
+        res = src[start: i-1]
+        return 222, res, i-1
+    elif state == 6:
+        res = src[start: i-1]
+        return 213, res, i-1
+
+
+def sig_reg2(src, i):
+    state = 0
+    start = i
+    while state != 2 and state != 4 and state != 5 and state != 6:
+        if state == 0:
+            if src[i] == '<':
+                state = 1
+                i += 1
+        elif state == 1:
+            if src[i] == '=':
+                state = 2
+                i += 1
+            elif src[i] == '<':
+                state = 3
+                i += 1
+            else:
+                state = 6
+                i += 1
+        elif state == 3:
+            if src[i] == '=':
+                state = 4
+                i += 1
+            else:
+                state = 5
+                i += 1
+    if state == 2:
+        res = src[start: i]
+        return 212, res, i
+    elif state == 4:
+        res = src[start: i]
+        return 223, res, i
+    elif state == 5:
+        res = src[start: i-1]
+        return 224, res, i-1
+    elif state == 6:
+        res = src[start: i-1]
+        return 211, res, i-1
 
 
 # print(digit_reg('1.45e5 + 5', 0))
@@ -266,4 +374,6 @@ def expl_div_reg(src, i):
 # print(chrs_cons_reg('"abc"', 0))
 
 # print(digit_reg('12355b.2 ', 0))
-# print(expl_div_reg('/2', 0))
+# print(expl_div_reg('/*2 ', 0))
+# print(sig_reg('>>= ', 0))
+# print(word_reg('_abc ', 0))
