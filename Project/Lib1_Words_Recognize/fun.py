@@ -22,16 +22,9 @@ def digit_reg(src, i):
     :return: 种别码 识别的串
     """
     state = 0
-    if src[i] == '+' or src[i] == '-':
-        state = 18
-    elif str.isdigit(src[i]):
-        state = 0
     start = i
     while state != 4 and state != 7 and state != 13 and state != 14 and state != 15 and state != 16:
-        if state == 18:
-            state = 0
-            i += 1
-        elif state == 0:
+        if state == 0:
             if src[i] == '0':
                 state = 3
                 i += 1
@@ -64,7 +57,7 @@ def digit_reg(src, i):
                 state = 8
                 i += 1
             else:
-                state = 16
+                state = 15
                 i += 1
             pass
         elif state == 17:
@@ -153,7 +146,7 @@ def digit_reg(src, i):
         while tail < len(src) and src[tail] != ' ':
             tail += 1
         return -1, src[start:tail], tail
-
+# print(digit_reg('1.5e + 3.4e-5 + 2e-3 ', 0))
 
 def word_reg(src, i):
     state = 0

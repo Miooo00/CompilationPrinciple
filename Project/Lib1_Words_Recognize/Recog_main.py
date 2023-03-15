@@ -16,7 +16,7 @@ def rec(src, i, isrecheck):
     elif src[i] == '_' or str.isalpha(src[i]):
         code, res, n_i = word_reg(src, i)
         return code, res, n_i
-    elif str.isdigit(src[i]) or src[i] == '+' or src[i] == '-':
+    elif str.isdigit(src[i]):
         code, res, n_i = digit_reg(src, i)
         return code, res, n_i
     elif src[i] == '>':
@@ -105,3 +105,4 @@ def entry1(content):
 # /
 # /
 # '''
+entry1('1.5e + 3.4e-5 + 2e-3')
