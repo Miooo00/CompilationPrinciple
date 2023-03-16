@@ -43,4 +43,4 @@ def chr_line_counter(path):
         print(tok)
 
 
-chr_line_counter('../Lib1_Words_Recognize/Test')
+chr_line_counter('../Lib1_Words_Recognize/Test1.txt')

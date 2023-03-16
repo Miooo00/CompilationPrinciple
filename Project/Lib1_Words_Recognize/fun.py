@@ -9,7 +9,7 @@ def read_dict():
     return category
 
 
-col = ['(', ')', '[', ']', '!', '*', '/', '%', '+', '-', '<', '>', '&', '|', '=', '.', ',', ';', '{', '}', ' ']
+col = ['(', ')', '[', ']', '!', '*', '/', '%', '+', '-', '<', '>', '&', '|', '=', ',', ';', '{', '}', ' ']
 hex_c = ['a', 'b', 'c', 'd', 'e', 'f', 'A', 'B', 'C', 'D', 'E', 'F']
 cat = read_dict()
 
@@ -47,7 +47,7 @@ def digit_reg(src, i):
                 state = 16
             pass
         elif state == 3:
-            if (src[i] != '8' and src[i] != '9') and str.isdigit(src[i]):
+            if (src[i] != '8' and src[i] != '9' and src[i] != '0') and str.isdigit(src[i]):
                 state = 17
                 i += 1
             elif src[i] == 'x' or src[i] == 'X':
@@ -56,15 +56,18 @@ def digit_reg(src, i):
             elif src[i] == '.':
                 state = 8
                 i += 1
-            else:
+            elif src[i] != '.' and src[i] in col:
                 state = 15
+                i += 1
+            else:
+                state = 16
                 i += 1
             pass
         elif state == 17:
             if (src[i] != '8' and src[i] != '9') and str.isdigit(src[i]):
                 state = 17
                 i += 1
-            elif src[i] == '8' or src[i] == '9':
+            elif src[i] == '8' or src[i] == '9' or src[i] == '.':
                 state = 16
                 i += 1
             else:
@@ -78,8 +81,11 @@ def digit_reg(src, i):
                 state = 16
                 i += 1
         elif state == 6:
-            if str.isdigit(src[i]) or str.isalpha(src[i]):
+            if str.isdigit(src[i]) or src[i] in hex_c:
                 state = 6
+                i += 1
+            elif str.isdigit(src[i]) and (src[i] not in hex_c):
+                state = 16
                 i += 1
             else:
                 state = 7
@@ -201,7 +207,7 @@ def chr_cons_reg(src, i):
 def chrs_cons_reg(src, i):
     state = 0
     start = i
-    while state != 3 and state != 4:
+    while state != 3 and state != 4 and state != 6:
         if state == 0:
             if src[i] == '"':
                 state = 1
@@ -214,17 +220,34 @@ def chrs_cons_reg(src, i):
             if src[i] == '"':
                 state = 3
                 i += 1
-            elif str.isascii(src[i]):
-                state = 2
+            elif src[i] == '/':
+                state = 5
                 i += 1
+            elif str.isascii(src[i]):
+                if i == len(src)-1:
+                    state = 4
+                    i += 1
+                else:
+                    state = 2
+                    i += 1
             else:
                 state = 4
+                i += 1
+        elif state == 5:
+            if src[i] == '*':
+                state = 6
+                i -= 1
+            else:
+                state = 2
                 i += 1
 
     res = src[start: i]
     if state == 3:
         return 600, res, i
+    elif state == 4 or state == 6:
+        return -4, res, i
 
+# print(chrs_cons_reg('"12;     /*测试异常字符串常量*/ ', 0))
 
 def expl_div_reg(src, i, pre_state):
     state = pre_state
@@ -360,6 +383,80 @@ def sig_reg2(src, i):
         res = src[start: i-1]
         return 211, res, i-1
 
+
+def double_sig_rec(src, i):
+    state = 0
+    start = i
+    while state != 2 and state != 4 and state != 7 and state != 10 and state != 13:
+        if state == 0:
+            if src[i] == '+':
+                state = 1
+                i += 1
+            elif src[i] == '&':
+                state = 5
+                i += 1
+            elif src[i] == '|':
+                state = 8
+                i += 1
+            elif src[i] == '-':
+                state = 11
+                i += 1
+        elif state == 1:
+            if src[i] == '+' or src[i] == '=':
+                state = 3
+                i += 1
+            elif str.isdigit(src[i]) or str.isalpha(src[i]):
+                state = 2
+                i += 1
+        elif state == 3:
+            if src[i] in col:
+                state = 4
+                i += 1
+        elif state == 5:
+            if src[i] == '&' or src[i] == '=':
+                state = 6
+                i += 1
+            elif str.isdigit(src[i]) or str.isalpha(src[i]):
+                state = 2
+                i += 1
+        elif state == 6:
+            if src[i] in col:
+                state = 7
+                i += 1
+        elif state == 8:
+            if src[i] == '|' or src[i] == '=':
+                state = 9
+                i += 1
+            elif str.isdigit(src[i]) or str.isalpha(src[i]):
+                state = 2
+                i += 1
+        elif state == 9:
+            if src[i] in col:
+                state = 10
+                i += 1
+        elif state == 11:
+            if src[i] == '-' or src[i] == '=':
+                state = 12
+                i += 1
+            elif str.isdigit(src[i]) or str.isalpha(src[i]):
+                state = 2
+                i += 1
+        elif state == 12:
+            if src[i] in col:
+                state = 13
+                i += 1
+
+    res = src[start: i]
+    if state == 2:
+        pass
+    elif state == 4:
+        return cat[res], res, i
+    elif state == 7:
+        return cat[res], res, i
+    elif state == 10:
+        return cat[res], res, i
+    elif state == 13:
+        return cat[res], res, i
 
 # print(digit_reg('1.45e5 + 5', 0))
 # print(word_reg('int ', 0))

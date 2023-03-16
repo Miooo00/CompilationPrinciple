@@ -1,6 +1,6 @@
 from Project.Lib1_Words_Recognize.fun import *
 c_dict = read_dict()
-col = ['(', ')', '[', ']', '!', '*', '/', '%', '+', '-', '<', '>', '&', '|', '=', '.', ',', ';', '{', '}']
+col = ['(', ')', '[', ']', '!', '*', '/', '%', '+', '-', '<', '>', '&', '|', '=', '.', ',', ';', '{', '}', '"']
 
 
 def rec(src, i, isrecheck):
@@ -57,6 +57,9 @@ def op(src, row, e_str, e_start, isrecheck, max_row):
         elif code == -3:
             tip = f'字符常量错误, 位置:第{row}行, 出错串:{item}'
             err.append(tip)
+        elif code == -4:
+            tip = f'字符串常量错误, 位置:第{row}行, 出错串:{item}'
+            err.append(tip)
         elif code == -9:
             next_line = 1
             last_str = item
@@ -98,11 +101,3 @@ def entry1(content):
         info.append([pos, neg, c_row])
         c_row += 1
     return info
-
-# data = '''
-# /*abc
-# avc
-# /
-# /
-# '''
-entry1('1.5e + 3.4e-5 + 2e-3')
