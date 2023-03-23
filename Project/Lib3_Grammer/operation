@@ -1,0 +1,7 @@
+A→BF
+F→+A|-A|$
+B→CG
+G→*B|/B|%B|$
+C→(A)|D|E
+D→H|I
+E→J
