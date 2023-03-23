@@ -10,6 +10,9 @@ def rec(src, i, isrecheck):
     if src[i] == ' ':
         i += 1
         return -10, None, i
+    elif src[i] == '+' or src[i] == '-' or src[i] == '&' or src[i] == '|':
+        code, res, n_i = double_sig_rec(src, i)
+        return code, res, n_i
     elif src[i] == '/':
         code, res, n_i = expl_div_reg(src, i, 0)
         return code, res, n_i
@@ -101,3 +104,4 @@ def entry1(content):
         info.append([pos, neg, c_row])
         c_row += 1
     return info
+print(entry1('+'))

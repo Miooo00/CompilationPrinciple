@@ -1,22 +1,17 @@
 """
 编写Lex源程序，其功能是统计文本文件中的字符数和行数。
 请分析Lex生成的C语言代码，找出“统计字符数和行数”的代码
-
-！需要安装依赖ply ---- pip install ply
-
 """
 
 import ply.lex as lex
 
 
 tokens = (
-    'CHRACTER',
+    'CHR',
 )
 
 
-t_CHRACTER = r'.'
-
-
+t_CHR = r'.'
 t_ignore = '\t'
 
 

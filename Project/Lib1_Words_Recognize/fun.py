@@ -10,6 +10,7 @@ def read_dict():
 
 
 col = ['(', ')', '[', ']', '!', '*', '/', '%', '+', '-', '<', '>', '&', '|', '=', ',', ';', '{', '}', ' ']
+border = ['(', ')', '[', ']', ',', ';', '{', '}', ' ']
 hex_c = ['a', 'b', 'c', 'd', 'e', 'f', 'A', 'B', 'C', 'D', 'E', 'F']
 cat = read_dict()
 
@@ -204,6 +205,7 @@ def chr_cons_reg(src, i):
 
 # print(chr_cons_reg("'abc' ", 0))
 
+
 def chrs_cons_reg(src, i):
     state = 0
     start = i
@@ -387,7 +389,7 @@ def sig_reg2(src, i):
 def double_sig_rec(src, i):
     state = 0
     start = i
-    while state != 2 and state != 4 and state != 7 and state != 10 and state != 13:
+    while state != 2 and state != 3 and state != 6 and state != 9 and state != 12:
         if state == 0:
             if src[i] == '+':
                 state = 1
@@ -405,57 +407,41 @@ def double_sig_rec(src, i):
             if src[i] == '+' or src[i] == '=':
                 state = 3
                 i += 1
-            elif str.isdigit(src[i]) or str.isalpha(src[i]):
+            elif str.isdigit(src[i]) or str.isalpha(src[i]) or (src[i] in border):
                 state = 2
-                i += 1
-        elif state == 3:
-            if src[i] in col:
-                state = 4
                 i += 1
         elif state == 5:
             if src[i] == '&' or src[i] == '=':
                 state = 6
                 i += 1
-            elif str.isdigit(src[i]) or str.isalpha(src[i]):
+            elif str.isdigit(src[i]) or str.isalpha(src[i]) or (src[i] in border):
                 state = 2
-                i += 1
-        elif state == 6:
-            if src[i] in col:
-                state = 7
                 i += 1
         elif state == 8:
             if src[i] == '|' or src[i] == '=':
                 state = 9
                 i += 1
-            elif str.isdigit(src[i]) or str.isalpha(src[i]):
+            elif str.isdigit(src[i]) or str.isalpha(src[i]) or (src[i] in border):
                 state = 2
-                i += 1
-        elif state == 9:
-            if src[i] in col:
-                state = 10
                 i += 1
         elif state == 11:
             if src[i] == '-' or src[i] == '=':
                 state = 12
                 i += 1
-            elif str.isdigit(src[i]) or str.isalpha(src[i]):
+            elif str.isdigit(src[i]) or str.isalpha(src[i]) or (src[i] in border):
                 state = 2
-                i += 1
-        elif state == 12:
-            if src[i] in col:
-                state = 13
                 i += 1
 
     res = src[start: i]
     if state == 2:
-        pass
-    elif state == 4:
+        return cat[src[start]], res, i
+    elif state == 3:
         return cat[res], res, i
-    elif state == 7:
+    elif state == 6:
         return cat[res], res, i
-    elif state == 10:
+    elif state == 9:
         return cat[res], res, i
-    elif state == 13:
+    elif state == 12:
         return cat[res], res, i
 
 # print(digit_reg('1.45e5 + 5', 0))

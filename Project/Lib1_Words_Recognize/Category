@@ -13,6 +13,7 @@ else 112
 for 113
 bool 114
 string 115
+main 116
 { 301
 } 302
 ; 303

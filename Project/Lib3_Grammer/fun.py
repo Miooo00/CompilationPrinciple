@@ -112,17 +112,20 @@ def getLast(start):
                     while j < len(sec) and sec[j] != i:
                         j += 1
                     # 在产生式中找到与当前非终结符相同的字符
-                    if j > len(sec) - 1:
+                    if sec[-1] in n:
+                        for item in follows[head]:
+                            follows[sec[-1]].add(item)
+                    if j >= len(sec) - 1:
                         break
-                    elif j == len(sec) - 1:
-                        for item in follows[i]:
-                            follows[head].add(item)
                     elif sec[j+1] in t:
                         follows[i].add(sec[j+1])
                     elif sec[j+1] in n:
                         for item in firsts[sec[j + 1]]:
                             if item != '$':
                                 follows[i].add(item)
+                    # print(sec)
+
     print(follows)
+    return follows
 
 getLast('A')
