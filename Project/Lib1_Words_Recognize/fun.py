@@ -153,7 +153,7 @@ def digit_reg(src, i):
         while tail < len(src) and src[tail] != ' ':
             tail += 1
         return -1, src[start:tail], tail
-# print(digit_reg('1.5e + 3.4e-5 + 2e-3 ', 0))
+
 
 def word_reg(src, i):
     state = 0
@@ -249,7 +249,6 @@ def chrs_cons_reg(src, i):
     elif state == 4 or state == 6:
         return -4, res, i
 
-# print(chrs_cons_reg('"12;     /*测试异常字符串常量*/ ', 0))
 
 def expl_div_reg(src, i, pre_state):
     state = pre_state
@@ -299,7 +298,7 @@ def expl_div_reg(src, i, pre_state):
         return 207, res, i-1
     elif state == 5:
         res = src[start: i]
-        return 900, res, i
+        return -5, res, i
     elif state == 6:
         res = src[start: i]
         return -2, res, i

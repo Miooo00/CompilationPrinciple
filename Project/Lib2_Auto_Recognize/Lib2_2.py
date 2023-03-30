@@ -7,24 +7,30 @@ import ply.lex as lex
 
 tokens = (
     'SIGNAL',
-    'NUMBER',
+    'NUMBER1',
+    'NUMBER2',
+    'NUMBER3',
+    'NUMBER4',
     'EXPLAIN',
     'OPERATION',
     'CHRC',
     'STRC',
     'SIGNALERROR',
-    # 'NUMERROR',
 )
 
 
 t_SIGNAL = r'[_|a-z|A-Z][_|a-z|A-Z|0-9]*'
-t_NUMBER = r'(0|[1-9][0-9]*)(\.).[0-9]*'
+
+t_NUMBER1 = r'[1-9][0-9]*\.([0-9][0-9]*(e|E)(\+|\-)([0-9]*|[0-9][0-9]*))'
+t_NUMBER2 = r'0(\.([0-9][0-9]*(e|E)(\+|\-)([0-9]*|[0-9][0-9]*)))'
+t_NUMBER3 = r'0[1-7][0-7]*'
+t_NUMBER4 = r'0(x|X)[0-9|A-F][0-9|A-F]*'
 t_EXPLAIN = r'/\*.*\*/'
 t_OPERATION = r'\+(\+|=)|\-(\-|=)|\&(\&|=)|\|(\||=)|(\>\>|\>\=)(\>|\=)|(\<\<|\<\=)(\<|\=)'
 t_CHRC = r"'(.*)'"
 t_STRC = r'"(.*)"'
 t_SIGNALERROR = r'[@$][_|a-z|A-Z][_|a-z|A-Z|0-9]'
-# t_NUMERROR = r'0[]'
+
 
 t_ignore = '\t'
 

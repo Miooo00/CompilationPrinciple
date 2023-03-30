@@ -10,6 +10,8 @@ def rec(src, i, isrecheck):
     if src[i] == ' ':
         i += 1
         return -10, None, i
+    elif src[i] == '@' or src[i] == '$':
+        return -6, src[:], len(src)
     elif src[i] == '+' or src[i] == '-' or src[i] == '&' or src[i] == '|':
         code, res, n_i = double_sig_rec(src, i)
         return code, res, n_i
@@ -63,21 +65,22 @@ def op(src, row, e_str, e_start, isrecheck, max_row):
         elif code == -4:
             tip = f'字符串常量错误, 位置:第{row}行, 出错串:{item}'
             err.append(tip)
+        elif code == -6:
+            tip = f'非法字符, 位置:第{row}行, 出错串:{item}'
+            err.append(tip)
         elif code == -9:
             next_line = 1
             last_str = item
         elif e_str and item:
-            res.append([e_str + item, code])
+            # res.append([e_str + item, code])
             isrecheck = 0
             next_line = 0
-        elif item:
+        elif item and code != -5:
             res.append([item, code])
     return res, err, next_line, last_str
 
 
 def entry1(content):
-    # with open(path, 'r', encoding='utf-8') as fp:
-    #     content = fp.readlines()
     content = content.split('\n')
     # 识别每一行
     c_row = 1
@@ -87,7 +90,6 @@ def entry1(content):
     recheck = 0
     max_crow = len(content)
     for line in content:
-        # if line.strip():
         line += ' '
         pos, neg, f_line, l_str = op(line, c_row, ex_str, ex_start, recheck, max_crow)
         if f_line:
@@ -104,4 +106,3 @@ def entry1(content):
         info.append([pos, neg, c_row])
         c_row += 1
     return info
-print(entry1('+'))
