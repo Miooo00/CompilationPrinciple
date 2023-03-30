@@ -11,7 +11,9 @@ def rec(src, i, isrecheck):
         i += 1
         return -10, None, i
     elif src[i] == '@' or src[i] == '$':
-        return -6, src[:], len(src)
+        while src[i] != ' ':
+            i += 1
+        return -6, src[:i], len(src)
     elif src[i] == '+' or src[i] == '-' or src[i] == '&' or src[i] == '|':
         code, res, n_i = double_sig_rec(src, i)
         return code, res, n_i

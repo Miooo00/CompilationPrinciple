@@ -130,6 +130,6 @@ class Collections:
 a = Collections('test1', 'arg_exp')
 a.GET_FIRST_FOLLOW()
 
-print(a.firsts)
-print(a.follows)
+
+print(a.n)
 print(a.t)
