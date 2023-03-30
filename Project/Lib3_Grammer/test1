@@ -1,0 +1,67 @@
+arg_exp→item arg_exp'
+arg_exp'→+ arg_exp|- arg_exp|$
+item→factor item'
+item'→factor *|factor /|factor %|$
+factor→( arg_exp )|con|var|fun_invoke
+con→num_con|sig_con
+var→signal
+fun_invoke→signal ( real_par_list )
+real_par_list→real_par|$
+real_par→expression real_par'
+real_par'→$|, real_par
+statement→declare_statement|exe_statement
+declare_statement→v_declare|fun_declare|$
+v_declare→con_declare|var_declare
+con_declare→const con_type con_list
+con_type→int|char|float
+con_list→signal = con con_list'
+con_list'→;|, con_list
+var_declare→var_type var_list
+var_list→one_var_declare var_list'
+var_list'→;|, var_list
+one_var_declare→var one_var_declare'
+one_var_declare'→$|= expression
+var_type→int|char|float
+fun_declare→fun_type signal ( fun_declare_fpar_list ) ;
+fun_type→int|char|float|void
+fun_declare_fpar_list→fun_declare_fpar|$
+fun_declare_fpar→var_type fun_declare_fpar'
+fun_declare_fpar'→$|, fun_declare_fpar
+bool_expression→bool_item bool_expression'
+bool_expression'→|| bool_expression|$
+bool_item→bool_factor bool_item'
+bool_item'→&& bool_item|$
+bool_factor→arg_exp|rel_expression|! bool_expression
+assign_expression→signal = expression
+expression→arg_exp|rel_expression|bool_expression|assign_expression
+exe_statement→digit_exe_statement|control_statement|complex_statement
+digit_exe_statement→assign_statement|fun_invoke_statement
+assign_statement→assign_expression ;
+fun_invoke_statement→fun_invoke ;
+control_statement→if_statement|for_statement|while_statement|do_while_statement|return_statement
+complex_statement→{ statement_list }
+statement_list→statement statement_list'
+statement_list'→$|statement_list
+if_statement→if ( expression ) statement if_statement'
+if_statement'→$|else statement
+for_statement→for ( expression ; expression ; expression ) cir_statement
+while_statement→while ( expression ) cir_statement
+do_while_statement→do cir_complex_statement while ( expression ) ;
+cir_statement→declare_statement|cir_exe_statement|cir_complex_statement
+cir_complex_statement→{ cir_statement_list }
+cir_statement_list→cir_statement cir_statement_list'
+cir_statement_list'→$|cir_statement_list
+cir_exe_statement→cir_if_statement|for_statement|while_statement|do_while_statement|return_statement|break_statement|continue_statement
+cir_if_statement→if ( expression ) cir_if_statement'
+cir_if_statement'→$|else cir_statement
+return_statement→return ;|return expression ;
+break_statement→break ;
+continue_statement→continue ;
+rel_expression→arg_exp rel_signal arg_exp
+rel_signal→>|<|>=|<=|==|!=
+fun_define→fun_type signal ( fun_define_fpar_list ) complex_statement
+fun_define_fpar_list→fun_define_fpar|$
+fun_define_fpar→var_type signal fun_define_fpar'
+fun_define_fpar'→$|, fun_define_fpar
+progrom→declare_statement main() complex_statement fun_stack
+fun_stack→fun_define fun_stack|$
