@@ -92,7 +92,7 @@ class Collections:
                 s = k + '→' + v
                 table.append(s)
         new_f = copy.deepcopy(self.follows)
-        self.follows[start].add('#')
+        self.follows[start].add('$')
         # 前后的两个follow集合相同结束循环
         while self.isstop(new_f, self.follows):
             new_f = copy.deepcopy(self.follows)
@@ -127,9 +127,7 @@ class Collections:
         self.getFirsts()
         self.getLast(self.start, self.firsts)
 
-a = Collections('test1', 'arg_exp')
+a = Collections('test1', 'program')
 a.GET_FIRST_FOLLOW()
 
-
-print(a.n)
-print(a.t)
+print(a.firsts)

@@ -1,12 +1,9 @@
-/* Test File */
-a = b/c
-if( r >= 2.0 ) C = 2*pi*r
-1.A5441
-0x5
-3.e62
-0.05
-1.5e + 3.4e-5 + 2e-3
-res = 'a' + 'b'
-res = "abc"
+const int a = 5;
+int b = 10;
+int main()
+{
+    int c = a + b;
+    return c;
+}
 
 

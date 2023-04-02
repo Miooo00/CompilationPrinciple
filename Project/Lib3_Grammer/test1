@@ -1,7 +1,7 @@
 arg_exp→item arg_exp'
 arg_exp'→+ arg_exp|- arg_exp|$
 item→factor item'
-item'→factor *|factor /|factor %|$
+item'→* item|/ item|% item|$
 factor→( arg_exp )|con|var|fun_invoke
 con→num_con|sig_con
 var→signal
@@ -54,7 +54,8 @@ cir_statement_list'→$|cir_statement_list
 cir_exe_statement→cir_if_statement|for_statement|while_statement|do_while_statement|return_statement|break_statement|continue_statement
 cir_if_statement→if ( expression ) cir_if_statement'
 cir_if_statement'→$|else cir_statement
-return_statement→return ;|return expression ;
+return_statement→return return_statement'
+return_statement'→;|expression ;
 break_statement→break ;
 continue_statement→continue ;
 rel_expression→arg_exp rel_signal arg_exp
@@ -63,5 +64,5 @@ fun_define→fun_type signal ( fun_define_fpar_list ) complex_statement
 fun_define_fpar_list→fun_define_fpar|$
 fun_define_fpar→var_type signal fun_define_fpar'
 fun_define_fpar'→$|, fun_define_fpar
-progrom→declare_statement main() complex_statement fun_stack
+program→declare_statement main() complex_statement fun_stack
 fun_stack→fun_define fun_stack|$
