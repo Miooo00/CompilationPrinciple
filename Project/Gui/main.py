@@ -39,10 +39,12 @@ class Gui:
     def button_fun1_2(self):
         if self.lib1_src_text.toPlainText():
             items = entry1(self.lib1_src_text.toPlainText())
+            self.saving = ''
             pos = ''
             neg = ''
             for line in items:
                 for i in line[0]:
+                    self.saving += str(i[1]) + ' ' + i[0] + ' ' + str(line[2]) + '\n'
                     pos += str(i[1]) + ',' + i[0] + ',' + str(line[2]) + '\n'
                 for i in line[1]:
                     if i:
@@ -55,7 +57,7 @@ class Gui:
     def button_fun1_3(self):
         file_path = QFileDialog.getExistingDirectory(self.ui, "选择保存路径")
         if file_path:
-            save_file(self.lib1_des_text.toPlainText(), file_path, self.lib1_flname)
+            save_file(self.saving, file_path, self.lib1_flname)
 
 
 QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)

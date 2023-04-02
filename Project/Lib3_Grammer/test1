@@ -64,5 +64,5 @@ fun_define→fun_type signal ( fun_define_fpar_list ) complex_statement
 fun_define_fpar_list→fun_define_fpar|$
 fun_define_fpar→var_type signal fun_define_fpar'
 fun_define_fpar'→$|, fun_define_fpar
-program→declare_statement main() complex_statement fun_stack
+program→declare_statement main ( ) complex_statement fun_stack
 fun_stack→fun_define fun_stack|$

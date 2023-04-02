@@ -4,6 +4,7 @@ class TokenBox:
         self.p = 0
         self.length = len(self.tokens)
         self.Token = ''
+        self.transformer()
 
     def get_next_token(self):
         if self.p <= self.length-1:
@@ -15,7 +16,15 @@ class TokenBox:
             return None
 
     def transformer(self):
-        pass
+        # signal、num_con、sig_con
+        for tok in self.tokens:
+            if tok[0] == '700':
+                tok[1] = 'signal'
+            elif tok[0] == '500' or tok[0] == '600':
+                tok[1] = 'sig_con'
+            elif tok[0] == '400' or tok[0] == '800':
+                tok[1] = 'num_con'
+
 
 def match(obj, t):
     if t.Token[1] == obj:
@@ -24,6 +33,35 @@ def match(obj, t):
     else:
         print('匹配错误')
         pass
+
+
+def conditon(t):
+    p = t.p
+    simbol = ['>', '<', '>=', '<=', '==', '!=']
+    wrong = t.tokens[p][2]
+    while t.tokens[p][1] != ')':
+        if wrong != t.tokens[p][2]:
+            break
+        if t.tokens[p][1] in simbol:
+            return False
+        p += 1
+
+    return True
+
+
+def conditon1(t):
+    p = t.p
+    simbol = ['&&', '||', '!']
+    wrong = t.tokens[p][2]
+    while t.tokens[p][1] != ')':
+        if wrong != t.tokens[p][2]:
+            break
+        if t.tokens[p][1] in simbol:
+            return False
+        p += 1
+
+    return True
+
 
 """
 E 变量
@@ -90,63 +128,63 @@ Z_ 程序
 A__ 函数块
 """
 
-def A(t):
+def A(t, col):
     """算术表达式"""
-    B()
-    A1()
+    B(t, col)
+    A1(t, col)
     pass
 
 
-def A1(t):
+def A1(t, col):
     """ 算术表达式' """
     if t.Token[1] == '+':
         match('+', t)
-        A(t)
+        A(t, col)
     elif t.Token[1] == '-':
         match('-', t)
-        A(t)
+        A(t, col)
     pass
 
 
-def B(t):
+def B(t, col):
     """项"""
-    C(t)
-    B1(t)
+    C(t, col)
+    B1(t, col)
     pass
 
 
-def B1(t):
+def B1(t, col):
     """ 项' """
     if t.Token[1] == '*':
         match('*', t)
-        B(t)
+        B(t, col)
     elif t.Token[1] == '/':
         match('/', t)
-        B(t)
+        B(t, col)
     elif t.Token[1] == '%':
         match('%', t)
-        B(t)
+        B(t, col)
     pass
 
 
-def C(t):
+def C(t, col):
     """因子"""
     if t.Token[1] == '(':
         match('(', t)
-        A(t)
+        A(t, col)
         if t.Token[1] == ')':
             match(')', t)
-    elif t.Token[1] in t.firsts['con']:
-        D(t)
-    elif t.Token[1] in t.firsts['var']:
-        E(t)
-    elif t.Token[1] in t.firsts['fun_invoke']:
-        F(t)
+    elif t.Token[1] in col.firsts['con']:
+        D(t, col)
+    elif t.Token[1] in col.firsts['var'] and (t.tokens[t.p][1] != '('):
+        E(t, col)
+    elif t.Token[1] in col.firsts['fun_invoke']:
+        F(t, col)
     else:
         pass
 
 
-def D(t):
+def D(t, col):
     """常量"""
     if t.Token[1] == 'num_con':
         match('num_con', t)
@@ -156,7 +194,7 @@ def D(t):
         pass
 
 
-def E(t):
+def E(t, col):
     """变量"""
     if t.Token[1] == 'signal':
         match('signal', t)
@@ -164,13 +202,13 @@ def E(t):
         pass
 
 
-def F(t):
+def F(t, col):
     """函数调用"""
     if t.Token[1] == 'signal':
         match('signal', t)
         if t.Token[1] == '(':
             match('(', t)
-            G(t)
+            G(t, col)
             if t.Token[1] == ')':
                 match(')', t)
             else:
@@ -181,71 +219,71 @@ def F(t):
         pass
 
 
-def G(t):
+def G(t, col):
     """实参列表"""
-    if t.Token[1] in t.firsts('real_par'):
-        H(t)
+    if t.Token[1] in col.firsts['real_par']:
+        H(t, col)
     pass
 
 
-def H(t):
+def H(t, col):
     """实参"""
-    A_(t)
-    H1(t)
+    A_(t, col)
+    H1(t, col)
     pass
 
 
-def H1(t):
+def H1(t, col):
     """ 实参' """
     if t.Token[1] == ',':
         match(',', t)
-        H(t)
+        H(t, col)
     pass
 
 
-def I(t):
+def I(t, col):
     """语句"""
-    if t.Token[1] in t.firsts['declare_statement']:
-        J(t)
-    elif t.Token[1] in t.firsts['exe_statement']:
-        B_(t)
+    if t.Token[1] in col.firsts['declare_statement']:
+        J(t, col)
+    elif t.Token[1] in col.firsts['exe_statement']:
+        B_(t, col)
     else:
         # error
         pass
 
 
-def J(t):
+def J(t, col):
     """声明语句"""
-    if t.Token[1] in t.firsts['v_declare']:
-        K(t)
-    elif t.Token[1] in t.firsts['fun_declare']:
-        S(t)
+    if t.Token[1] in col.firsts['v_declare']:
+        K(t, col)
+    elif t.Token[1] in col.firsts['fun_declare']:
+        S(t, col)
     pass
 
 
-def K(t):
+def K(t, col):
     """值声明"""
-    if t.Token[1] in t.firsts['con_declare']:
-        L(t)
-    elif t.Token[1] in t.firsts['var_declare']:
-        O(t)
+    if t.Token[1] in col.firsts['con_declare']:
+        L(t, col)
+    elif t.Token[1] in col.firsts['var_declare']:
+        O(t, col)
     else:
         # error
         pass
 
 
-def L(t):
+def L(t, col):
     """常量声明"""
     if t.Token[1] == 'const':
         match('const', t)
-        M(t)
-        N(t)
+        M(t, col)
+        N(t, col)
     else:
         # error
         pass
 
 
-def M(t):
+def M(t, col):
     """常量类型"""
     if t.Token[1] == 'int':
         match('int', t)
@@ -258,18 +296,14 @@ def M(t):
         pass
 
 
-def N(t):
+def N(t, col):
     """常量声明表"""
-    if t.Token[0] == 'signal':
+    if t.Token[1] == 'signal':
         match('signal', t)
         if t.Token[1] == '=':
-            match('=',t)
-            if t.Token[1] == 'con':
-                match('con', t)
-                N1(t)
-            else:
-                # error
-                pass
+            match('=', t)
+            D(t, col)
+            N1(t, col)
         else:
             # error
             pass
@@ -279,63 +313,59 @@ def N(t):
 
 
 
-def N1(t):
+def N1(t, col):
     """常量声明表'"""
     if t.Token[1] == ';':
         match(';', t)
     elif t.Token[1] == ',':
         match(',', t)
-        N(t)
+        N(t, col)
     else:
         # error
         pass
 
 
-def O(t):
+def O(t, col):
     """变量声明"""
-    R(t)
-    P(t)
+    R(t, col)
+    P(t, col)
     pass
 
 
-def P(t):
+def P(t, col):
     """变量声明表"""
-    Q(t)
-    P1(t)
+    Q(t, col)
+    P1(t, col)
     pass
 
 
-def P1(t):
+def P1(t, col):
     """变量声明表'"""
-    if t.Token[1] == ';':
+    if t.Token[1] == ';' or t.Token[1] == ";":
         match(';', t)
-    elif t.Token[1] == ',':
+    elif t.Token[1] == ',' or t.Token[1] == ",":
         match(',', t)
-        P(t)
+        P(t, col)
     else:
         # error
         pass
 
 
-def Q(t):
+def Q(t, col):
     """单变量声明"""
-    if t.Token[1] == 'var':
-        match('var', t)
-        Q1(t)
-    else:
-        # error
-        pass
+    E(t, col)
+    Q1(t, col)
 
 
-def Q1(t):
+def Q1(t, col):
     """单变量声明'"""
     if t.Token[1] == '=':
         match('=', t)
-        A_(t)
+        A_(t, col)
     pass
 
 
-def R(t):
+def R(t, col):
     """变量类型"""
     if t.Token[1] == 'int':
         match('int', t)
@@ -348,21 +378,18 @@ def R(t):
         pass
 
 
-def S(t):
+def S(t, col):
     """函数声明"""
-    T(t)
-    if t.Token[1] == 'signal':
-        match('signal', t)
-        if t.Token[1] == '(':
-            match('(', t)
-            U(t)
-            if t.Token[1] == ')':
-                match(')', t)
-                if t.Token[1] == ';':
-                    match(';', t)
-                else:
-                    # error
-                    pass
+    # T(t, col)
+    # if t.Token[1] == 'signal':
+    #     match('signal', t)
+    if t.Token[1] == '(':
+        match('(', t)
+        U(t, col)
+        if t.Token[1] == ')':
+            match(')', t)
+            if t.Token[1] == ';':
+                match(';', t)
             else:
                 # error
                 pass
@@ -372,9 +399,12 @@ def S(t):
     else:
         # error
         pass
+    # else:
+    #     # error
+    #     pass
 
 
-def T(t):
+def T(t, col):
     """函数类型"""
     if t.Token[1] == 'int':
         match('int', t)
@@ -389,80 +419,81 @@ def T(t):
         pass
 
 
-def U(t):
+def U(t, col):
     """函数声明形参列表"""
-    if t.Token[1] in t.firsts['fun_declare_fpar']:
-        V(t)
+    if t.Token[1] in col.firsts['fun_declare_fpar']:
+        V(t, col)
     pass
 
 
-def V(t):
+def V(t, col):
     """函数声明形参"""
-    R(t)
-    V1(t)
+    R(t, col)
+    V1(t, col)
     pass
 
 
-def V1(t):
+def V1(t, col):
     """函数声明形参'"""
     if t.Token[1] == ',':
         match(',', t)
-        V(t)
+        V(t, col)
     pass
 
 
-def W(t):
+def W(t, col):
     """布尔表达式"""
-    X(t)
-    W1(t)
+    X(t, col)
+    W1(t, col)
     pass
 
 
-def W1(t):
+def W1(t, col):
     """布尔表达式'"""
     if t.Token[1] == '||':
         match('||', t)
-        W(t)
+        W(t, col)
 
     pass
 
 
-def X(t):
+def X(t, col):
     """布尔项"""
-    Y(t)
-    X1(t)
+    Y(t, col)
+    X1(t, col)
     pass
 
 
-def X1(t):
+def X1(t, col):
     """布尔项'"""
     if t.Token[1] == '&&':
         match('&&', t)
-        X(t)
+        X(t, col)
     pass
 
 
-def Y(t):
+def Y(t, col):
     """布尔因子"""
-    if t.Token[1] in t.firsts['arg_exp']:
-        A(t)
-    elif t.Token[1] in t.firsts['rel_expression']:
-        U_(t)
+    # 同样存在相同firsts集合优先情况考虑
+    if t.Token[1] in col.firsts['arg_exp'] and conditon(t):
+        A(t, col)
+    elif t.Token[1] in col.firsts['rel_expression']:
+        U_(t, col)
     elif t.Token[1] == '!':
         match('!', t)
-        W1(t)
+        W1(t, col)
     else:
         # error
         pass
 
 
-def Z(t):
+def Z(t, col):
     """赋值表达式"""
     if t.Token[1] == 'signal':
         match('signal', t)
         if t.Token[1] == '=':
             match('=', t)
-            A_(t)
+            A_(t, col)
         else:
             # error
             pass
@@ -471,48 +502,48 @@ def Z(t):
         pass
 
 
-def A_(t):
+def A_(t, col):
     """表达式"""
-    if t.Token[1] in t.firsts['arg_exp']:
-        A(t)
-    elif t.Token[1] in t.firsts['rel_expression']:
-        U_(t)
-    elif t.Token[1] in t.firsts['bool_expression']:
-        W1(t)
-    elif t.Token[1] in t.firsts['assign_expression']:
-        Z(t)
+    if t.Token[1] in col.firsts['arg_exp'] and conditon(t) and conditon1(t) and (t.tokens[t.p][1] != '='):
+        A(t, col)
+    elif t.Token[1] in col.firsts['rel_expression'] and (t.tokens[t.p][1] != '=' and conditon1(t)):
+        U_(t, col)
+    elif t.Token[1] in col.firsts['bool_expression'] and (t.tokens[t.p][1] != '='):
+        W(t, col)
+    elif t.Token[1] in col.firsts['assign_expression']:
+        Z(t, col)
     else:
         # error
         pass
 
 
-def B_(t):
+def B_(t, col):
     """执行语句"""
-    if t.Token[1] in t.firsts['digit_exe_statement']:
-        C_(t)
-    elif t.Token[1] in t.firsts['control_statement']:
-        F_(t)
-    elif t.Token[1] in t.firsts['complex_statement']:
-        G_(t)
+    if t.Token[1] in col.firsts['digit_exe_statement']:
+        C_(t, col)
+    elif t.Token[1] in col.firsts['control_statement']:
+        F_(t, col)
+    elif t.Token[1] in col.firsts['complex_statement']:
+        G_(t, col)
     else:
         # error
         pass
 
 
-def C_(t):
+def C_(t, col):
     """数据处理语句"""
-    if t.Token[1] in t.firsts['assign_statement']:
-        D_(t)
-    elif t.Token[1] in t.firsts['fun_invoke_statement']:
-        E_(t)
+    if t.Token[1] in col.firsts['assign_statement'] and (t.tokens[t.p][1] != '('):
+        D_(t, col)
+    elif t.Token[1] in col.firsts['fun_invoke_statement']:
+        E_(t, col)
     else:
         # error
         pass
 
 
-def D_(t):
+def D_(t, col):
     """赋值语句"""
-    Z(t)
+    Z(t, col)
     if t.Token[1] == ';':
         match(';', t)
     else:
@@ -520,9 +551,9 @@ def D_(t):
         pass
 
 
-def E_(t):
+def E_(t, col):
     """函数调用语句"""
-    F(t)
+    F(t, col)
     if t.Token[1] == ';':
         match(';', t)
     else:
@@ -530,28 +561,28 @@ def E_(t):
         pass
 
 
-def F_(t):
+def F_(t, col):
     """控制语句"""
-    if t.Token[1] in t.firsts['if_statement']:
-        I_(t)
-    elif t.Token[1] in t.firsts['for_statement']:
-        J_(t)
-    elif t.Token[1] in t.firsts['while_statement']:
-        K_(t)
-    elif t.Token[1] in t.firsts['do_while_statement']:
-        L_(t)
-    elif t.Token[1] in t.firsts['return_statement']:
-        R_(t)
+    if t.Token[1] in col.firsts['if_statement']:
+        I_(t, col)
+    elif t.Token[1] in col.firsts['for_statement']:
+        J_(t, col)
+    elif t.Token[1] in col.firsts['while_statement']:
+        K_(t, col)
+    elif t.Token[1] in col.firsts['do_while_statement']:
+        L_(t, col)
+    elif t.Token[1] in col.firsts['return_statement']:
+        R_(t, col)
     else:
         # error
         pass
 
 
-def G_(t):
+def G_(t, col):
     """复合语句"""
     if t.Token[1] == '{':
         match('{', t)
-        H_(t)
+        H_(t, col)
         if t.Token[1] == '}':
             match('}', t)
         else:
@@ -562,31 +593,31 @@ def G_(t):
         pass
 
 
-def H_(t):
+def H_(t, col):
     """语句表"""
-    I(t)
-    H_1(t)
+    I(t, col)
+    H_1(t, col)
     pass
 
 
-def H_1(t):
+def H_1(t, col):
     """语句表'"""
-    if t.Token[1] in t.firsts['statement_list']:
-        H_(t)
+    if t.Token[1] in col.firsts['statement_list']:
+        H_(t, col)
     pass
 
 
-def I_(t):
+def I_(t, col):
     """if语句"""
     if t.Token[1] == 'if':
         match('if', t)
         if t.Token[1] == '(':
             match('(', t)
-            A_(t)
+            A_(t, col)
             if t.Token[1] == ')':
                 match(')', t)
-                I(t)
-                I_1(t)
+                I(t, col)
+                I_1(t, col)
             else:
                 # error
                 pass
@@ -598,30 +629,30 @@ def I_(t):
         pass
 
 
-def I_1(t):
+def I_1(t, col):
     """if语句'"""
     if t.Token[1] == 'else':
         match('else', t)
-        I(t)
+        I(t, col)
     pass
 
 
-def J_(t):
+def J_(t, col):
     """for语句"""
     if t.Token[1] == 'for':
         match('for', t)
         if t.Token[1] == '(':
             match('(', t)
-            A_(t)
+            A_(t, col)
             if t.Token[1] == ';':
                 match(';', t)
-                A_(t)
+                A_(t, col)
                 if t.Token[1] == ';':
                     match(';', t)
-                    A_(t)
+                    A_(t, col)
                     if t.Token[1] == ')':
                         match(')', t)
-                        M_(t)
+                        M_(t, col)
                     else:
                         # error
                         pass
@@ -639,16 +670,16 @@ def J_(t):
         pass
 
 
-def K_(t):
+def K_(t, col):
     """while语句"""
     if t.Token[1] == 'while':
         match('while', t)
         if t.Token[1] == '(':
             match('(', t)
-            A_(t)
+            A_(t, col)
             if t.Token[1] == ')':
                 match(')', t)
-                M_(t)
+                M_(t, col)
             else:
                 # error
                 pass
@@ -660,16 +691,16 @@ def K_(t):
         pass
 
 
-def L_(t):
+def L_(t, col):
     """dowhile语句"""
     if t.Token[1] == 'do':
         match('do', t)
-        N_(t)
+        N_(t, col)
         if t.Token[1] == 'while':
             match('while', t)
             if t.Token[1] == '(':
                 match('(', t)
-                A_(t)
+                A_(t, col)
                 if t.Token[1] == ')':
                     match(')', t)
                     if t.Token[1] == ';':
@@ -691,24 +722,27 @@ def L_(t):
         pass
 
 
-def M_(t):
+def M_(t, col):
     """循环语句"""
-    if t.Token[1] in t.firsts['declare_statement']:
-        J(t)
-    elif t.Token[1] in t.firsts['cir_exe_statement']:
-        P_(t)
-    elif t.Token[1] in t.firsts['cir_complex_statement']:
-        N_(t)
+    # 书上给的词法在循环语句中没有执行语句,在循环内的执行语句如赋值无法正确识别 ----
+    if t.Token[1] in col.firsts['exe_statement']:
+        B_(t, col)
+    elif t.Token[1] in col.firsts['declare_statement']:
+        J(t, col)
+    elif t.Token[1] in col.firsts['cir_exe_statement']:
+        P_(t, col)
+    elif t.Token[1] in col.firsts['cir_complex_statement']:
+        N_(t, col)
     else:
         # error
         pass
 
 
-def N_(t):
+def N_(t, col):
     """循环用复合语句"""
     if t.Token[1] == '{':
         match('{', t)
-        O_(t)
+        O_(t, col)
         if t.Token[1] == '}':
             match('}', t)
         else:
@@ -719,51 +753,51 @@ def N_(t):
         pass
 
 
-def O_(t):
+def O_(t, col):
     """循环语句表"""
-    M_(t)
-    O_1(t)
+    M_(t, col)
+    O_1(t, col)
     pass
 
 
-def O_1(t):
+def O_1(t, col):
     """循环语句表'"""
-    if t.Token[1] in t.firsts['cir_statement_list']:
-        O_(t)
+    if t.Token[1] in col.firsts['cir_statement_list']:
+        O_(t, col)
     pass
 
 
-def P_(t):
+def P_(t, col):
     """循环执行语句"""
-    if t.Token[1] in t.firsts['cir_if_statement']:
-        Q_(t)
-    elif t.Token[1] in t.firsts['for_statement']:
-        J_(t)
-    elif t.Token[1] in t.firsts['while_statement']:
-        K_(t)
-    elif t.Token[1] in t.firsts['do_while_statement']:
-        L_(t)
-    elif t.Token[1] in t.firsts['return_statement']:
-        R_(t)
-    elif t.Token[1] in t.firsts['break_statement']:
-        S_(t)
-    elif t.Token[1] in t.firsts['continue_statement']:
-        T_(t)
+    if t.Token[1] in col.firsts['cir_if_statement']:
+        Q_(t, col)
+    elif t.Token[1] in col.firsts['for_statement']:
+        J_(t, col)
+    elif t.Token[1] in col.firsts['while_statement']:
+        K_(t, col)
+    elif t.Token[1] in col.firsts['do_while_statement']:
+        L_(t, col)
+    elif t.Token[1] in col.firsts['return_statement']:
+        R_(t, col)
+    elif t.Token[1] in col.firsts['break_statement']:
+        S_(t, col)
+    elif t.Token[1] in col.firsts['continue_statement']:
+        T_(t, col)
     else:
         # error
         pass
 
 
-def Q_(t):
+def Q_(t, col):
     """循环用if语句"""
     if t.Token[1] == 'if':
         match('if', t)
         if t.Token[1] == '(':
             match('(', t)
-            A_(t)
+            A_(t, col)
             if t.Token[1] == ')':
                 match(')', t)
-                Q_1(t)
+                Q_1(t, col)
             else:
                 # error
                 pass
@@ -775,28 +809,28 @@ def Q_(t):
         pass
 
 
-def Q_1(t):
+def Q_1(t, col):
     """循环用if语句'"""
     if t.Token[1] == 'else':
         match('else', t)
-        M_(t)
+        M_(t, col)
     pass
 
 
-def R_(t):
+def R_(t, col):
     """return语句"""
     if t.Token[1] == 'return':
         match('return', t)
-        R_1(t)
+        R_1(t, col)
     pass
 
 
-def R_1(t):
+def R_1(t, col):
     """return语句"""
     if t.Token[1] == ';':
         match('return', t)
-    elif t.Token[1] in t.firsts['expression']:
-        A_(t)
+    elif t.Token[1] in col.firsts['expression']:
+        A_(t, col)
         if t.Token[1] == ';':
             match(';', t)
         else:
@@ -807,7 +841,7 @@ def R_1(t):
         pass
 
 
-def S_(t):
+def S_(t, col):
     """break语句"""
     if t.Token[1] == 'break':
         match('break', t)
@@ -821,7 +855,7 @@ def S_(t):
         pass
 
 
-def T_(t):
+def T_(t, col):
     """continue语句"""
     if t.Token[1] == 'continue':
         match('continue', t)
@@ -835,15 +869,15 @@ def T_(t):
         pass
 
 
-def U_(t):
+def U_(t, col):
     """关系表达式"""
-    A(t)
-    V_(t)
-    A(t)
+    A(t, col)
+    V_(t, col)
+    A(t, col)
     pass
 
 
-def V_(t):
+def V_(t, col):
     """关系运算符"""
     if t.Token[1] == '>':
         match('>', t)
@@ -862,17 +896,17 @@ def V_(t):
         pass
 
 
-def W_(t):
+def W_(t, col):
     """函数定义"""
-    T(t)
+    T(t, col)
     if t.Token[1] == 'signal':
         match('signal', t)
         if t.Token[1] == '(':
             match('(', t)
-            X_(t)
+            X_(t, col)
             if t.Token[1] == ')':
                 match(')', t)
-                G_(t)
+                G_(t, col)
             else:
                 # error
                 pass
@@ -884,43 +918,43 @@ def W_(t):
         pass
 
 
-def X_(t):
+def X_(t, col):
     """函数定义形参列表"""
-    if t.Token[1] in t.firsts['fun_define_fpar']:
-        Y_(t)
+    if t.Token[1] in col.firsts['fun_define_fpar']:
+        Y_(t, col)
     pass
 
 
-def Y_(t):
+def Y_(t, col):
     """函数定义形参"""
-    R(t)
+    R(t, col)
     if t.Token[1] == 'signal':
         match('signal', t)
-        Y_1(t)
+        Y_1(t, col)
     else:
         # error
         pass
 
 
-def Y_1(t):
+def Y_1(t, col):
     """函数定义形参'"""
     if t.Token[1] == ',':
         match(',', t)
-        Y_(t)
+        Y_(t, col)
     pass
 
 
-def Z_(t):
+def Z_(t, col):
     """程序"""
-    J(t)
+    J(t, col)
     if t.Token[1] == 'main':
         match('main', t)
         if t.Token[1] == '(':
             match('(', t)
             if t.Token[1] == ')':
                 match(')', t)
-                G_(t)
-                A__(t)
+                G_(t, col)
+                A__(t, col)
             else:
                 # error
                 pass
@@ -932,11 +966,11 @@ def Z_(t):
         pass
 
 
-def A__(t):
+def A__(t, col):
     """函数块"""
-    if t.Token[1] in t.firsts['fun_define']:
-        W_(t)
-        A__(t)
+    if t.Token[1] in col.firsts['fun_define']:
+        W_(t, col)
+        A__(t, col)
     pass
 
 

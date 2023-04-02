@@ -59,7 +59,6 @@ def digit_reg(src, i):
                 i += 1
             elif src[i] != '.' and src[i] in col:
                 state = 15
-                i += 1
             else:
                 state = 16
                 i += 1
@@ -388,7 +387,7 @@ def sig_reg2(src, i):
 def double_sig_rec(src, i):
     state = 0
     start = i
-    while state != 2 and state != 3 and state != 6 and state != 9 and state != 12:
+    while state != 2 and state != 3 and state != 6 and state != 9 and state != 12 and state != 14:
         if state == 0:
             if src[i] == '+':
                 state = 1
@@ -402,34 +401,39 @@ def double_sig_rec(src, i):
             elif src[i] == '-':
                 state = 11
                 i += 1
+            elif src[i] == '=':
+                state = 13
+                i += 1
         elif state == 1:
             if src[i] == '+' or src[i] == '=':
                 state = 3
                 i += 1
             elif str.isdigit(src[i]) or str.isalpha(src[i]) or (src[i] in border):
                 state = 2
-                i += 1
         elif state == 5:
             if src[i] == '&' or src[i] == '=':
                 state = 6
                 i += 1
             elif str.isdigit(src[i]) or str.isalpha(src[i]) or (src[i] in border):
                 state = 2
-                i += 1
         elif state == 8:
             if src[i] == '|' or src[i] == '=':
                 state = 9
                 i += 1
             elif str.isdigit(src[i]) or str.isalpha(src[i]) or (src[i] in border):
                 state = 2
-                i += 1
         elif state == 11:
             if src[i] == '-' or src[i] == '=':
                 state = 12
                 i += 1
             elif str.isdigit(src[i]) or str.isalpha(src[i]) or (src[i] in border):
                 state = 2
+        elif state == 13:
+            if src[i] == '=':
+                state = 14
                 i += 1
+            elif str.isdigit(src[i]) or str.isalpha(src[i]) or (src[i] in border):
+                state = 2
 
     res = src[start: i]
     if state == 2:
@@ -441,6 +445,8 @@ def double_sig_rec(src, i):
     elif state == 9:
         return cat[res], res, i
     elif state == 12:
+        return cat[res], res, i
+    elif state == 14:
         return cat[res], res, i
 
 # print(digit_reg('1.45e5 + 5', 0))

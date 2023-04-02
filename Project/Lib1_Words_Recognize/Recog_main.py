@@ -14,7 +14,7 @@ def rec(src, i, isrecheck):
         while src[i] != ' ':
             i += 1
         return -6, src[:i], len(src)
-    elif src[i] == '+' or src[i] == '-' or src[i] == '&' or src[i] == '|':
+    elif src[i] == '+' or src[i] == '-' or src[i] == '&' or src[i] == '|' or src[i] == '=':
         code, res, n_i = double_sig_rec(src, i)
         return code, res, n_i
     elif src[i] == '/':

@@ -1,0 +1,25 @@
+int f(int);
+main()
+{
+   int m;
+   m = read();
+   write(f(m));
+
+}
+
+int f(int n) {
+   int a,b,c;
+   if(n==1) {
+		return 1;
+	}
+   else if(n==2) {
+		return 2;
+	}
+   else if(n==3) {
+		return 4;
+	}
+    a = f(n - 1);
+    b = f(n - 2);
+    c = f(n - 3);
+    return a + b + c;
+ }

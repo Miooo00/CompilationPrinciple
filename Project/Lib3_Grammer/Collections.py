@@ -130,4 +130,5 @@ class Collections:
 a = Collections('test1', 'program')
 a.GET_FIRST_FOLLOW()
 
-print(a.firsts)
+# print(a.firsts['bool_expression'])
+# print(a.firsts['rel_expression'])
