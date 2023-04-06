@@ -13,17 +13,23 @@ class TokenBox:
             self.Token = res
             return res
         else:
+            self.Token = [-1, 'None', 'None', -1]
             return None
 
     def transformer(self):
         # signal、num_con、sig_con
         for tok in self.tokens:
             if tok[0] == '700':
+                tok.insert(1, 'signal')
                 tok[1] = 'signal'
             elif tok[0] == '500' or tok[0] == '600':
+                tok.insert(1, 'sig_con')
                 tok[1] = 'sig_con'
             elif tok[0] == '400' or tok[0] == '800':
+                tok.insert(1, 'num_con')
                 tok[1] = 'num_con'
+            else:
+                tok.insert(1, tok[1])
 
 
 def match(obj, t):
@@ -345,9 +351,13 @@ def P1(t, col):
         match(';', t)
     elif t.Token[1] == ',' or t.Token[1] == ",":
         match(',', t)
-        P(t, col)
+        if t.Token in col.firsts['var_list']:
+            P(t, col)
+        else:
+            print(f'出现错误:,号后面是否声明变量或者结束该行语句?,第{t.tokens[t.p - 2][3]}行')
     else:
         # error
+        print(f'出现错误:缺少;号,第{t.tokens[t.p-2][3]}行')
         pass
 
 
@@ -392,6 +402,7 @@ def S(t, col):
                 match(';', t)
             else:
                 # error
+                print(f'出现函数声明错误,函数声明缺少;号,第{t.tokens[t.p-2][3]}行')
                 pass
         else:
             # error
@@ -496,6 +507,11 @@ def Z(t, col):
             A_(t, col)
         else:
             # error
+            print(f'出现赋值错误,可能是声明语句出错,第{t.tokens[t.p-2][3]}行')
+            while t.Token[1] != '=':
+                t.get_next_token()
+            match('=', t)
+            A_(t, col)
             pass
     else:
         # error
@@ -513,6 +529,7 @@ def A_(t, col):
     elif t.Token[1] in col.firsts['assign_expression']:
         Z(t, col)
     else:
+        print(f'出现错误,表达式为空,第{t.tokens[t.p-2][3]}行')
         # error
         pass
 
@@ -547,6 +564,7 @@ def D_(t, col):
     if t.Token[1] == ';':
         match(';', t)
     else:
+        print(f'出现错误,赋值语句缺少;号,第{t.tokens[t.p - 2][3]}行')
         # error
         pass
 
@@ -586,6 +604,7 @@ def G_(t, col):
         if t.Token[1] == '}':
             match('}', t)
         else:
+            print('出现错误,缺少{}符号,第{}行'.format('}', t.tokens[t.p - 2][3]))
             # error
             pass
     else:
@@ -616,14 +635,38 @@ def I_(t, col):
             A_(t, col)
             if t.Token[1] == ')':
                 match(')', t)
+                # 如何解决复合函数左{号遗漏情况
                 I(t, col)
                 I_1(t, col)
             else:
-                # error
-                pass
+                print(f'出现错误,if语句未右闭合,第{t.tokens[t.p-2][3]}行')
+                if t.Token[1] in col.firsts['statement']:
+                    I(t, col)
+                    I_1(t, col)
+                else:
+                    return
         else:
-            # error
-            pass
+            print(f'出现错误,if语句未左闭合,第{t.tokens[t.p-2][3]}行')
+            if t.Token[1] in col.firsts['expression']:
+                A_(t, col)
+                if t.Token[1] == ')':
+                    match(')', t)
+                    I(t, col)
+                    I_1(t, col)
+                else:
+                    print(f'出现错误,if语句未右闭合,第{t.tokens[t.p - 2][3]}行')
+                    if t.Token[1] in col.firsts['statement']:
+                        I(t, col)
+                        I_1(t, col)
+                    else:
+                        return
+            else:
+                print(f'出现错误,if语句缺少表达式,第{t.tokens[t.p - 2][3]}行')
+                if t.Token[1] in col.firsts['statement']:
+                    I(t, col)
+                    I_1(t, col)
+                else:
+                    return
     else:
         # error
         pass
@@ -828,7 +871,7 @@ def R_(t, col):
 def R_1(t, col):
     """return语句"""
     if t.Token[1] == ';':
-        match('return', t)
+        match(';', t)
     elif t.Token[1] in col.firsts['expression']:
         A_(t, col)
         if t.Token[1] == ';':
