@@ -74,7 +74,6 @@ def entry(token_file):
     G_(tokenbox, col)
     while tokenbox.Token[1] in ['int', 'char', 'float', 'void']:
         W_(tokenbox, col)
-        pass
         # 函数定义分析
 
 

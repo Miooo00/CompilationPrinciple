@@ -6,9 +6,16 @@ float m()
 
 void main()
 {
-    char a = 'k',
+    char a = 'k',b = 'k';
+    while (a)
+    {
+        break;
+    }
+    for(a=0;a>0;a=a+1);
+
     int f = 0;
     if (a==b)
         a = 1;
     return;
+
 }

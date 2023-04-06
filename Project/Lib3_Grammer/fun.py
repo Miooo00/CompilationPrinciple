@@ -187,6 +187,7 @@ def C(t, col):
     elif t.Token[1] in col.firsts['fun_invoke']:
         F(t, col)
     else:
+        print(f'出现错误,缺少因子或者说数字?,第{t.tokens[t.p-2][3]}行')
         pass
 
 
@@ -351,7 +352,7 @@ def P1(t, col):
         match(';', t)
     elif t.Token[1] == ',' or t.Token[1] == ",":
         match(',', t)
-        if t.Token in col.firsts['var_list']:
+        if t.Token[1] in col.firsts['var_list']:
             P(t, col)
         else:
             print(f'出现错误:,号后面是否声明变量或者结束该行语句?,第{t.tokens[t.p - 2][3]}行')
@@ -529,7 +530,7 @@ def A_(t, col):
     elif t.Token[1] in col.firsts['assign_expression']:
         Z(t, col)
     else:
-        print(f'出现错误,表达式为空,第{t.tokens[t.p-2][3]}行')
+        print(f'出现错误,缺少表达式?,第{t.tokens[t.p-2][3]}行')
         # error
         pass
 
@@ -698,14 +699,111 @@ def J_(t, col):
                         M_(t, col)
                     else:
                         # error
+                        print(f'出现错误,for语句右括号未闭合,第{t.tokens[t.p-2][3]}行')
+                        if t.Token[1] in col.firsts['cir_statement']:
+                            M_(t, col)
                         pass
                 else:
+                    print(f'出现错误,for语句缺少第2个;号,第{t.tokens[t.p - 2][3]}行')
+                    if t.Token[1] in col.firsts['expression']:
+                        A_(t, col)
+                        if t.Token[1] == ')':
+                            match(')', t)
+                            M_(t, col)
+                        else:
+                            # error
+                            print(f'出现错误,for语句右括号未闭合,第{t.tokens[t.p - 2][3]}行')
+                            if t.Token[1] in col.firsts['cir_statement']:
+                                M_(t, col)
+                            pass
                     # error
                     pass
             else:
-                # error
-                pass
+                print(f'出现错误,for语句缺少第1个;号,第{t.tokens[t.p-2][3]}行')
+                if t.Token[1] in col.firsts['expression']:
+                    A_(t, col)
+                    if t.Token[1] == ';':
+                        match(';', t)
+                        A_(t, col)
+                        if t.Token[1] == ')':
+                            match(')', t)
+                            M_(t, col)
+                        else:
+                            print(f'出现错误,for语句右括号未闭合,第{t.tokens[t.p - 2][3]}行')
+                            if t.Token[1] in col.firsts['cir_statement']:
+                                M_(t, col)
+                    else:
+                        print(f'出现错误,for语句缺少第2个;号,第{t.tokens[t.p - 2][3]}行')
+                        if t.Token[1] in col.firsts['expression']:
+                            A_(t, col)
+                            if t.Token[1] == ')':
+                                match(')', t)
+                                M_(t, col)
+                            else:
+                                # error
+                                print(f'出现错误,for语句右括号未闭合,第{t.tokens[t.p - 2][3]}行')
+                                if t.Token[1] in col.firsts['cir_statement']:
+                                    M_(t, col)
+                                pass
         else:
+            print(f'出现错误,for语句左括号未闭合,第{t.tokens[t.p - 2][3]}行')
+            if t.Token[1] in col.firsts['expression']:
+                A_(t, col)
+                if t.Token[1] == ';':
+                    match(';', t)
+                    A_(t, col)
+                    if t.Token[1] == ';':
+                        match(';', t)
+                        A_(t, col)
+                        if t.Token[1] == ')':
+                            match(')', t)
+                            M_(t, col)
+                        else:
+                            print(f'出现错误,for语句右括号未闭合,第{t.tokens[t.p - 2][3]}行')
+                            if t.Token[1] in col.firsts['cir_statement']:
+                                M_(t, col)
+                    else:
+                        print(f'出现错误,for语句缺少第2个;号,第{t.tokens[t.p - 2][3]}行')
+                        if t.Token[1] in col.firsts['expression']:
+                            A_(t, col)
+                            if t.Token[1] == ')':
+                                match(')', t)
+                                M_(t, col)
+                            else:
+                                # error
+                                print(f'出现错误,for语句右括号未闭合,第{t.tokens[t.p - 2][3]}行')
+                                if t.Token[1] in col.firsts['cir_statement']:
+                                    M_(t, col)
+                                pass
+
+                else:
+                    print(f'出现错误,for语句缺少第1个;号,第{t.tokens[t.p - 2][3]}行')
+                    if t.Token[1] in col.firsts['expression']:
+                        A_(t, col)
+                        if t.Token[1] == ';':
+                            match(';', t)
+                            A_(t, col)
+                            if t.Token[1] == ')':
+                                match(')', t)
+                                M_(t, col)
+                            else:
+                                # error
+                                print(f'出现错误,for语句右括号未闭合,第{t.tokens[t.p - 2][3]}行')
+                                if t.Token[1] in col.firsts['cir_statement']:
+                                    M_(t, col)
+                        else:
+                            print(f'出现错误,for语句缺少第2个;号,第{t.tokens[t.p - 2][3]}行')
+                            if t.Token[1] in col.firsts['expression']:
+                                A_(t, col)
+                                if t.Token[1] == ')':
+                                    match(')', t)
+                                    M_(t, col)
+                                else:
+                                    # error
+                                    print(f'出现错误,for语句右括号未闭合,第{t.tokens[t.p - 2][3]}行')
+                                    if t.Token[1] in col.firsts['cir_statement']:
+                                        M_(t, col)
+                                    pass
             # error
             pass
     else:
@@ -724,10 +822,20 @@ def K_(t, col):
                 match(')', t)
                 M_(t, col)
             else:
+                print(f'出现错误,while语句括号未右闭合,第{t.tokens[t.p-2][3]}行')
+                if t.Token[1] in col.firsts['cir_statement']:
+                    M_(t, col)
                 # error
                 pass
         else:
-            # error
+            print(f'出现错误,while语句括号未左闭合,第{t.tokens[t.p - 2][3]}行')
+            if t.Token[1] == ')':
+                match(')', t)
+                M_(t, col)
+            else:
+                print(f'出现错误,while语句括号未右闭合,第{t.tokens[t.p-2][3]}行')
+                if t.Token[1] in col.firsts['cir_statement']:
+                    M_(t, col)
             pass
     else:
         # error
@@ -768,14 +876,16 @@ def L_(t, col):
 def M_(t, col):
     """循环语句"""
     # 书上给的词法在循环语句中没有执行语句,在循环内的执行语句如赋值无法正确识别 ----
-    if t.Token[1] in col.firsts['exe_statement']:
-        B_(t, col)
-    elif t.Token[1] in col.firsts['declare_statement']:
+    # if t.Token[1] in col.firsts['exe_statement']:
+    #     B_(t, col)
+    if t.Token[1] in col.firsts['declare_statement']:
         J(t, col)
     elif t.Token[1] in col.firsts['cir_exe_statement']:
         P_(t, col)
     elif t.Token[1] in col.firsts['cir_complex_statement']:
         N_(t, col)
+    elif t.Token[1] == ';':
+        match(';', t)
     else:
         # error
         pass

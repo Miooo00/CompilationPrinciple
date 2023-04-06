@@ -130,5 +130,5 @@ class Collections:
 a = Collections('test1', 'program')
 a.GET_FIRST_FOLLOW()
 
-# print(a.firsts['var_list'])
+print(a.firsts['var_list'])
 # print(a.firsts['rel_expression'])
