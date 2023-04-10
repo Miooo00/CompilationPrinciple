@@ -3,6 +3,10 @@ import copy
 
 class Collections:
     def __init__(self, regulation, start):
+        """
+        :param regulation: 语法规则
+        :param start: 开始符号
+        """
         self.mapping = {}
         self.t = set()
         self.n = set()
@@ -23,8 +27,9 @@ class Collections:
             self.n.add(items[0])
         for line in src:
             items = line.strip().split('→')
-            if '|' in items[1]:
-                divs_sub = items[1].split('|')
+            # 区分|与|| 将|更换为<div>
+            if '<div>' in items[1]:
+                divs_sub = items[1].split('<div>')
                 for divs in divs_sub:
                     divs = divs.split(' ')
                     for div in divs:
@@ -41,9 +46,9 @@ class Collections:
     def getFirst(self, cur, first):
         nexts = self.mapping[cur]
 
-        if '|' in nexts:
-            nexts = nexts.split('|')
-            # + arg_exp|- arg_exp|$
+        if '<div>' in nexts:
+            nexts = nexts.split('<div>')
+            # + arg_exp<div>- arg_exp<div>$
             for item in nexts:
                 divs = item.split(' ')
                 div = divs[0]
@@ -83,8 +88,8 @@ class Collections:
         for k in self.follows:
             self.follows[k] = set()
         for k, v in self.mapping.items():
-            if '|' in v:
-                v = v.split('|')
+            if '<div>' in v:
+                v = v.split('<div>')
                 for i in v:
                     s = k + '→' + i
                     table.append(s)
@@ -104,7 +109,7 @@ class Collections:
                     sec = div[-1].split(' ')
                     head = div[0]
                     for j in range(len(sec)):
-                        # '|'拆分
+                        # '<div>'拆分
                         while j < len(sec) and sec[j] != i:
                             j += 1
                         # 在产生式中找到与当前非终结符相同的字符
@@ -130,5 +135,5 @@ class Collections:
 a = Collections('test1', 'program')
 a.GET_FIRST_FOLLOW()
 
-print(a.firsts['var_list'])
+# print(a.firsts['cir_statement_list'])
 # print(a.firsts['rel_expression'])

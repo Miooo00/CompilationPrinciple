@@ -432,7 +432,7 @@ def double_sig_rec(src, i):
             if src[i] == '=':
                 state = 14
                 i += 1
-            elif str.isdigit(src[i]) or str.isalpha(src[i]) or (src[i] in border):
+            elif str.isdigit(src[i]) or str.isalpha(src[i]) or (src[i] in border) or src[i] == '"' or src[i] == "'":
                 state = 2
 
     res = src[start: i]

@@ -1,5 +1,0 @@
-A→BF
-F→+A|-A|$
-B→CG
-G→*B|/B|%B|$
-C→(A)|H|I|J

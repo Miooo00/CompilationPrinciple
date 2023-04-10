@@ -108,3 +108,4 @@ def entry1(content):
         info.append([pos, neg, c_row])
         c_row += 1
     return info
+

@@ -135,6 +135,4 @@ def getLast(start, firsts):
     return follows
 
 
-f = getFirsts()
-getLast('arg_exp', firsts=f)
 
