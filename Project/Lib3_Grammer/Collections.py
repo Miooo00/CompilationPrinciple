@@ -132,8 +132,8 @@ class Collections:
         self.getFirsts()
         self.getLast(self.start, self.firsts)
 
-a = Collections('test1', 'program')
-a.GET_FIRST_FOLLOW()
+# a = Collections('test1', 'program')
+# a.GET_FIRST_FOLLOW()
 
 # print(a.firsts['cir_statement_list'])
 # print(a.firsts['rel_expression'])

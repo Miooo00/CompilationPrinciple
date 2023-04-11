@@ -1,3 +1,8 @@
+import copy
+
+from Project.Lib4_Semantic_Analyse.Tables import Constobj
+
+
 class TokenBox:
     def __init__(self, tokens):
         self.tokens = tokens
@@ -13,18 +18,23 @@ class TokenBox:
             self.Token = res
             return res
         else:
+            self.Token = [-1, 'None', 'None', -1]
             return None
 
     def transformer(self):
         # signal、num_con、sig_con
         for tok in self.tokens:
             if tok[0] == '700':
+                tok.insert(1, 'signal')
                 tok[1] = 'signal'
             elif tok[0] == '500' or tok[0] == '600':
+                tok.insert(1, 'sig_con')
                 tok[1] = 'sig_con'
             elif tok[0] == '400' or tok[0] == '800':
+                tok.insert(1, 'num_con')
                 tok[1] = 'num_con'
-
+            else:
+                tok.insert(1, tok[1])
 
 def match(obj, t):
     if t.Token[1] == obj:
@@ -38,9 +48,9 @@ def match(obj, t):
 def conditon(t):
     p = t.p
     simbol = ['>', '<', '>=', '<=', '==', '!=']
-    wrong = t.tokens[p][2]
-    while t.tokens[p][1] != ')':
-        if wrong != t.tokens[p][2]:
+    wrong = t.tokens[p][3]
+    while p < len(t.tokens) and t.tokens[p][1] != ')' and t.tokens[p][1] != ';':
+        if wrong != t.tokens[p][3]:
             break
         if t.tokens[p][1] in simbol:
             return False
@@ -52,9 +62,9 @@ def conditon(t):
 def conditon1(t):
     p = t.p
     simbol = ['&&', '||', '!']
-    wrong = t.tokens[p][2]
-    while t.tokens[p][1] != ')':
-        if wrong != t.tokens[p][2]:
+    wrong = t.tokens[p][3]
+    while (p < len(t.tokens) and t.tokens[p][1] != ')') and (p < len(t.tokens) and t.tokens[p][1] != ';'):
+        if wrong != t.tokens[p][3]:
             break
         if t.tokens[p][1] in simbol:
             return False
@@ -184,14 +194,18 @@ def C(t, col):
         pass
 
 
-def D(t, col):
+def D(t, col, c_obj=None, c_table=None):
     """常量"""
     if t.Token[1] == 'num_con':
+        if c_obj:
+            c_obj.val = t.Token[2]
         match('num_con', t)
     elif t.Token[1] == 'sig_con':
+        if c_obj:
+            c_obj.val = t.Token[2]
         match('sig_con', t)
-    else:
-        pass
+    if c_table:
+        c_table.add_obj(c_obj)
 
 
 def E(t, col):
@@ -272,54 +286,54 @@ def K(t, col):
         pass
 
 
-def L(t, col):
+def L(t, col, c_table):
     """常量声明"""
+    c_obj = Constobj()
     if t.Token[1] == 'const':
         match('const', t)
-        M(t, col)
-        N(t, col)
+        M(t, col, c_obj, c_table)
+        N(t, col, c_obj, c_table)
     else:
         # error
         pass
 
 
-def M(t, col):
+def M(t, col, c_obj, c_table):
     """常量类型"""
     if t.Token[1] == 'int':
         match('int', t)
+        c_obj.type = 'int'
     elif t.Token[1] == 'char':
         match('char', t)
+        c_obj.type = 'char'
     elif t.Token[1] == 'float':
         match('float', t)
-    else:
-        # error
-        pass
+        c_obj.type = 'float'
 
 
-def N(t, col):
+def N(t, col, c_obj, c_table):
     """常量声明表"""
     if t.Token[1] == 'signal':
+        c_obj.name = t.Token[2]
         match('signal', t)
         if t.Token[1] == '=':
             match('=', t)
-            D(t, col)
-            N1(t, col)
-        else:
-            # error
-            pass
-    else:
-        # error
-        pass
+            D(t, col, c_obj, c_table)
+            N1(t, col, c_obj, c_table)
+    # 语义处理阶段应当是不存在语法错误
 
 
 
-def N1(t, col):
+def N1(t, col, c_obj, c_table):
     """常量声明表'"""
     if t.Token[1] == ';':
         match(';', t)
     elif t.Token[1] == ',':
         match(',', t)
-        N(t, col)
+        next_cobj = copy.deepcopy(c_obj)
+        next_cobj.name = ''
+        next_cobj.val = ''
+        N(t, col, next_cobj, c_table)
     else:
         # error
         pass
@@ -380,9 +394,6 @@ def R(t, col):
 
 def S(t, col):
     """函数声明"""
-    # T(t, col)
-    # if t.Token[1] == 'signal':
-    #     match('signal', t)
     if t.Token[1] == '(':
         match('(', t)
         U(t, col)
@@ -429,6 +440,8 @@ def U(t, col):
 def V(t, col):
     """函数声明形参"""
     R(t, col)
+    if t.Token[1] == 'signal':
+        match('signal', t)
     V1(t, col)
     pass
 

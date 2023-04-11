@@ -1,13 +1,16 @@
+const int a=123,b=25;
+const char c = 'k',d = "abc";
+const float b = 1.25
 
-int fun int x, int y)
+int fun (int x, int y);
 
-int main(
+int main()
 {
     int i = 0;
     while(i<=100)
     {
         i = i + 1;
-        printf("%d\n", i)
+        printf("%d\n", i);
     }
     return i;
 }

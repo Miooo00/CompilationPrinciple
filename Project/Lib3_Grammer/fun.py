@@ -630,6 +630,7 @@ def E_(t, col):
     if t.Token[1] == ';':
         match(';', t)
     else:
+        print(f'出现错误,赋值调用缺少;号,第{t.tokens[t.p - 2][3]}行')
         # error
         pass
 

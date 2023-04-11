@@ -198,6 +198,7 @@ def chr_cons_reg(src, i):
 
     res = src[start: i]
     if state == 3:
+        res = res.replace("'", '')
         return 500, res, i
     elif state == 4:
         return -3, res, i
@@ -244,6 +245,7 @@ def chrs_cons_reg(src, i):
 
     res = src[start: i]
     if state == 3:
+        res = res.replace('"', '')
         return 600, res, i
     elif state == 4 or state == 6:
         return -4, res, i
