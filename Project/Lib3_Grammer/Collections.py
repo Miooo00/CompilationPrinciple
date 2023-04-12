@@ -27,9 +27,9 @@ class Collections:
             self.n.add(items[0])
         for line in src:
             items = line.strip().split('→')
-            # 区分|与|| 将|更换为<div>
-            if '<div>' in items[1]:
-                divs_sub = items[1].split('<div>')
+            # 区分|与|| 将|更换为<or>
+            if '<or>' in items[1]:
+                divs_sub = items[1].split('<or>')
                 for divs in divs_sub:
                     divs = divs.split(' ')
                     for div in divs:
@@ -46,9 +46,9 @@ class Collections:
     def getFirst(self, cur, first):
         nexts = self.mapping[cur]
 
-        if '<div>' in nexts:
-            nexts = nexts.split('<div>')
-            # + arg_exp<div>- arg_exp<div>$
+        if '<or>' in nexts:
+            nexts = nexts.split('<or>')
+            # + arg_exp<or>- arg_exp<or>$
             for item in nexts:
                 divs = item.split(' ')
                 div = divs[0]
@@ -88,8 +88,8 @@ class Collections:
         for k in self.follows:
             self.follows[k] = set()
         for k, v in self.mapping.items():
-            if '<div>' in v:
-                v = v.split('<div>')
+            if '<or>' in v:
+                v = v.split('<or>')
                 for i in v:
                     s = k + '→' + i
                     table.append(s)
@@ -109,7 +109,7 @@ class Collections:
                     sec = div[-1].split(' ')
                     head = div[0]
                     for j in range(len(sec)):
-                        # '<div>'拆分
+                        # '<or>'拆分
                         while j < len(sec) and sec[j] != i:
                             j += 1
                         # 在产生式中找到与当前非终结符相同的字符

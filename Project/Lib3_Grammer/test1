@@ -1,68 +1,68 @@
 arg_exp→item arg_exp'
-arg_exp'→+ arg_exp<div>- arg_exp<div>$
+arg_exp'→+ arg_exp<or>- arg_exp<or>$
 item→factor item'
-item'→* item<div>/ item<div>% item<div>& item<div>| item<div>$
-factor→( arg_exp )<div>con<div>var<div>fun_invoke
-con→num_con<div>sig_con
+item'→* item<or>/ item<or>% item<or>& item<or>| item<or>$
+factor→( arg_exp )<or>con<or>var<or>fun_invoke
+con→num_con<or>sig_con
 var→signal
 fun_invoke→signal ( real_par_list )
-real_par_list→real_par<div>$
+real_par_list→real_par<or>$
 real_par→expression real_par'
-real_par'→$<div>, real_par
-statement→declare_statement<div>exe_statement
-declare_statement→v_declare<div>fun_declare<div>$
-v_declare→con_declare<div>var_declare
+real_par'→$<or>, real_par
+statement→declare_statement<or>exe_statement
+declare_statement→v_declare<or>fun_declare<or>$
+v_declare→con_declare<or>var_declare
 con_declare→const con_type con_list
-con_type→int<div>char<div>float
+con_type→int<or>char<or>float
 con_list→signal = con con_list'
-con_list'→;<div>, con_list
+con_list'→;<or>, con_list
 var_declare→var_type var_list
 var_list→one_var_declare var_list'
-var_list'→;<div>, var_list
+var_list'→;<or>, var_list
 one_var_declare→var one_var_declare'
-one_var_declare'→$<div>= expression
-var_type→int<div>char<div>float
+one_var_declare'→$<or>= expression
+var_type→int<or>char<or>float
 fun_declare→fun_type signal ( fun_declare_fpar_list ) ;
-fun_type→int<div>char<div>float<div>void
-fun_declare_fpar_list→fun_declare_fpar<div>$
+fun_type→int<or>char<or>float<or>void
+fun_declare_fpar_list→fun_declare_fpar<or>$
 fun_declare_fpar→var_type signal fun_declare_fpar'
-fun_declare_fpar'→$<div>, fun_declare_fpar
+fun_declare_fpar'→$<or>, fun_declare_fpar
 bool_expression→bool_item bool_expression'
-bool_expression'→|| bool_expression<div>$
+bool_expression'→|| bool_expression<or>$
 bool_item→bool_factor bool_item'
-bool_item'→&& bool_item<div>$
-bool_factor→arg_exp<div>rel_expression<div>! bool_expression
+bool_item'→&& bool_item<or>$
+bool_factor→arg_exp<or>rel_expression<or>! bool_expression
 assign_expression→signal = expression
-expression→arg_exp<div>rel_expression<div>bool_expression<div>assign_expression
-exe_statement→digit_exe_statement<div>control_statement<div>complex_statement
-digit_exe_statement→assign_statement<div>fun_invoke_statement
+expression→arg_exp<or>rel_expression<or>bool_expression<or>assign_expression
+exe_statement→digit_exe_statement<or>control_statement<or>complex_statement
+digit_exe_statement→assign_statement<or>fun_invoke_statement
 assign_statement→assign_expression ;
 fun_invoke_statement→fun_invoke ;
-control_statement→if_statement<div>for_statement<div>while_statement<div>do_while_statement<div>return_statement
+control_statement→if_statement<or>for_statement<or>while_statement<or>do_while_statement<or>return_statement
 complex_statement→{ statement_list }
 statement_list→statement statement_list'
-statement_list'→$<div>statement_list
+statement_list'→$<or>statement_list
 if_statement→if ( expression ) statement if_statement'
-if_statement'→$<div>else statement
+if_statement'→$<or>else statement
 for_statement→for ( expression ; expression ; expression ) cir_statement
 while_statement→while ( expression ) cir_statement
 do_while_statement→do cir_complex_statement while ( expression ) ;
-cir_statement→digit_exe_statement<div>fun_invoke_statement<div>declare_statement<div>cir_exe_statement<div>cir_complex_statement
+cir_statement→digit_exe_statement<or>fun_invoke_statement<or>declare_statement<or>cir_exe_statement<or>cir_complex_statement
 cir_complex_statement→{ cir_statement_list }
 cir_statement_list→cir_statement cir_statement_list'
-cir_statement_list'→$<div>cir_statement_list
-cir_exe_statement→cir_if_statement<div>for_statement<div>while_statement<div>do_while_statement<div>return_statement<div>break_statement<div>continue_statement
+cir_statement_list'→$<or>cir_statement_list
+cir_exe_statement→cir_if_statement<or>for_statement<or>while_statement<or>do_while_statement<or>return_statement<or>break_statement<or>continue_statement
 cir_if_statement→if ( expression ) cir_if_statement'
-cir_if_statement'→$<div>else cir_statement
+cir_if_statement'→$<or>else cir_statement
 return_statement→return return_statement'
-return_statement'→;<div>expression ;
+return_statement'→;<or>expression ;
 break_statement→break ;
 continue_statement→continue ;
 rel_expression→arg_exp rel_signal arg_exp
-rel_signal→><div><<div>>=<div><=<div>==<div>!=
+rel_signal→><or><<or>>=<or><=<or>==<or>!=
 fun_define→fun_type signal ( fun_define_fpar_list ) complex_statement
-fun_define_fpar_list→fun_define_fpar<div>$
+fun_define_fpar_list→fun_define_fpar<or>$
 fun_define_fpar→var_type signal fun_define_fpar'
-fun_define_fpar'→$<div>, fun_define_fpar
+fun_define_fpar'→$<or>, fun_define_fpar
 program→declare_statement main ( ) complex_statement fun_stack
-fun_stack→fun_define fun_stack<div>$
+fun_stack→fun_define fun_stack<or>$

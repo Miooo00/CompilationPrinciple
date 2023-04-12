@@ -44,7 +44,7 @@ def entry(token_file, regulation, start='program'):
         W_(tokenbox, col)
 
     for i in const_table.t:
-        i.Tprint()
+        i.items_print()
 
 
 entry('../Lib3_Grammer/Token/target.reg', '../Lib3_Grammer/test1')

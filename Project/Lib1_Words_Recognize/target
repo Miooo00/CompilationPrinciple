@@ -1,6 +1,6 @@
 const int a=123,b=25;
 const char c = 'k',d = "abc";
-const float b = 1.25
+const float b = 1.25;
 
 int fun (int x, int y);
 
@@ -22,7 +22,7 @@ int fun(int x, int y)
         return 0;
 
     for(i=5;i>0;i=i+1)
-    {
+
         a = 5;
     }
 }

@@ -107,7 +107,6 @@ def digit_reg(src, i):
                 i += 1
             elif src[i] in col or src[i] == ' ':
                 state = 14
-                i += 1
             else:
                 state = 16
                 i += 1
@@ -141,9 +140,12 @@ def digit_reg(src, i):
                 i += 1
             pass
     syn = -1
-    if state == 4 or state == 7 or state == 13 or state == 14:
+    if state == 4 or state == 7 or state == 13:
         syn = 800
-        return syn, src[start:i - 1], i
+        return syn, src[start:i-1], i
+    elif state == 14:
+        syn = 800
+        return syn, src[start:i], i
     elif state == 15:
         syn = 400
         return syn, src[start:i], i

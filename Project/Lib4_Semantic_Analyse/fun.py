@@ -1,6 +1,6 @@
 import copy
 
-from Project.Lib4_Semantic_Analyse.Tables import Constobj
+from Project.Lib4_Semantic_Analyse.Tables import ConstItem
 
 
 class TokenBox:
@@ -22,7 +22,11 @@ class TokenBox:
             return None
 
     def transformer(self):
-        # signal、num_con、sig_con
+        """
+        700 标识符
+        500,600 字符(串)常量
+        400 数值常量
+        """
         for tok in self.tokens:
             if tok[0] == '700':
                 tok.insert(1, 'signal')
@@ -288,7 +292,7 @@ def K(t, col):
 
 def L(t, col, c_table):
     """常量声明"""
-    c_obj = Constobj()
+    c_obj = ConstItem()
     if t.Token[1] == 'const':
         match('const', t)
         M(t, col, c_obj, c_table)

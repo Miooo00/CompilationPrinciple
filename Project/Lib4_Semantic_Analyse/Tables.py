@@ -4,13 +4,34 @@ class Tables:
         self.name = ''
 
 
-class Constobj(Tables):
+class FunctionItem:
     def __init__(self):
-        super().__init__()
+        self.entry = 1
+        self.name = ''
         self.type = ''
         self.val = ''
 
-    def Tprint(self):
+
+class VarItem:
+    def __init__(self):
+        self.entry = 1
+        self.name = ''
+        self.type = ''
+        self.val = ''
+        self.varList = []
+
+    def items_print(self):
+        print(self.entry, self.name, self.type, self.val)
+
+
+class ConstItem:
+    def __init__(self):
+        self.entry = 1
+        self.name = ''
+        self.type = ''
+        self.val = ''
+
+    def items_print(self):
         print(self.entry, self.name, self.type, self.val)
 
 
