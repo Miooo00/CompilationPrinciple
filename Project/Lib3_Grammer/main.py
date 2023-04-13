@@ -1,7 +1,7 @@
 """
 语法分析入口
 需要:
-    词法分析结果文件: [种别码, 'obj', 行号]
+    词法分析结果文件行格式: [种别码, 'obj', 行号]
     语法规则:
         (递归下降,无左递归,无回溯.如A→B
         <div>取代|表示'或者', |用于逻辑运算或)
@@ -9,7 +9,8 @@
 能够:
     1、能检查大部分语法错误
 不能:
-    2、缺少for语句左大括号缺失判断
+    2、缺少for语句左大括号缺失判断,
+        循环语句嵌套复合语句时后一个语句的大括号会被前一个识别,仅出现在大括号相邻情况
     3、缺少error信息收集
 
 """
@@ -22,7 +23,38 @@ from Project.Lib3_Grammer.fun import *
 from Project.Lib3_Grammer.Collections import Collections
 
 
-def entry(token_file, regulation, start='program'):
+def read_file(token_file):
+    with open(token_file, 'r', encoding='utf-8') as fp:
+        content = fp.readlines()
+    return content
+
+
+def init_tokenbox(content) -> TokenBox:
+    tokens = []
+    content = content.split('\n')
+    for line in content:
+        if line:
+            t = []
+            divs = line.strip().split(' ')
+            for div in divs:
+                t.append(div)
+            tokens.append(t)
+    tokenbox = TokenBox(tokens)
+    return tokenbox
+
+def init_tokenbox1(content) -> TokenBox:
+    tokens = []
+    for line in content:
+        if line:
+            t = []
+            divs = line.strip().split(' ')
+            for div in divs:
+                t.append(div)
+            tokens.append(t)
+    tokenbox = TokenBox(tokens)
+    return tokenbox
+
+def entry(content, regulation, start='program'):
     """
     :param token_file: 词法分析结果
     :param regulation: 语法
@@ -32,17 +64,12 @@ def entry(token_file, regulation, start='program'):
     tree = Tree()
     root = tree.create_node('program')
     errors = []
-    tokens = []
-    with open(token_file, 'r', encoding='utf-8') as fp:
-        content = fp.readlines()
-        for line in content:
-            t = []
-            divs = line.strip().split(' ')
-            for div in divs:
-                t.append(div)
-            tokens.append(t)
-    tokenbox = TokenBox(tokens)
+
+    tokenbox = init_tokenbox1(content)
+    print(regulation)
     col = Collections(regulation, start)
+    print(col)
+
     col.GET_FIRST_FOLLOW()
     tokenbox.get_next_token()
 
@@ -52,17 +79,27 @@ def entry(token_file, regulation, start='program'):
             # 常量声明
             L(tokenbox, col, root, tree, errors)
         elif tokenbox.Token[1] in ['int', 'char', 'float', 'void']:
+            typ = tokenbox.Token[2]
             tokenbox.get_next_token()
             if tokenbox.Token[1] == 'main':
                 break
             if tokenbox.Token[1] != 'signal':
                 pass
                 # 错误处理
+            name = tokenbox.Token[2]
             tokenbox.get_next_token()
             if tokenbox.Token[1] == '(':
                 # 修改了文法的递归下降函数 解决了检测入口不对称
 
-                S(tokenbox, col, root, tree, errors)
+                sub1 = Node('fun_declare')
+                tree.add_node(sub1, root)
+                t = Node('fun_type')
+                tree.add_node(t, sub1)
+                tree.add_node(Node(typ), t)
+                tree.add_node(Node(name), sub1)
+
+                # tree
+                S(tokenbox, col, sub1, tree, errors)
                 if tokenbox.Token[1] == '{':
                     print(f'出现错误,在main函数前创建函数语句,或没有main函数,第{tokenbox.tokens[tokenbox.p-2][3]}行')
                     errors.append(f'出现错误,在main函数前创建函数语句,或没有main函数,第{tokenbox.tokens[tokenbox.p-2][3]}行')
@@ -70,7 +107,13 @@ def entry(token_file, regulation, start='program'):
                     break
                 # 函数声明
             elif tokenbox.Token[1] == '=' or tokenbox.Token[1] == ',':
-                O(tokenbox, col, root, tree, errors)
+
+                sub1 = Node('global_fun_declare')
+                tree.add_node(sub1, root)
+                tree.add_node(Node(typ), sub1)
+                tree.add_node(Node(name), sub1)
+                print(sub1.data)
+                O(tokenbox, col, sub1, tree, errors)
                 # 变量声明
             else:
                 print(f'出现错误,函数定义缺少左括号,第{tokenbox.tokens[tokenbox.p-2][3]}行')
@@ -138,8 +181,9 @@ def entry(token_file, regulation, start='program'):
     if not errors:
         tree.show()
 
-    return errors
+    return tree, errors
 
 
 # 测试
-print(entry('Token/target.reg', 'test1'))
+content = read_file('Token/target.reg')
+print(entry(content, 'test1'))

@@ -160,9 +160,11 @@ def A(t, col, parent, tree, errors):
 def A1(t, col, parent, tree, errors):
     """ 算术表达式' """
     if t.Token[1] == '+':
+        tree.add_node(Node('+'), parent)
         match('+', t)
         A(t, col, parent, tree, errors)
     elif t.Token[1] == '-':
+        tree.add_node(Node('-'), parent)
         match('-', t)
         A(t, col, parent, tree, errors)
     pass
@@ -185,18 +187,23 @@ def B(t, col, parent, tree, errors):
 def B1(t, col, parent, tree, errors):
     """ 项' """
     if t.Token[1] == '*':
+        tree.add_node(Node('*'), parent)
         match('*', t)
         B(t, col, parent, tree, errors)
     elif t.Token[1] == '/':
+        tree.add_node(Node('/'), parent)
         match('/', t)
         B(t, col, parent, tree, errors)
     elif t.Token[1] == '%':
+        tree.add_node(Node('%'), parent)
         match('%', t)
         B(t, col, parent, tree, errors)
     elif t.Token[1] == '&':
+        tree.add_node(Node('&'), parent)
         match('&', t)
         B(t, col, parent, tree, errors)
     elif t.Token[1] == '|':
+        tree.add_node(Node('|'), parent)
         match('|', t)
         B(t, col, parent, tree, errors)
     pass
@@ -256,6 +263,7 @@ def E(t, col, parent, tree, errors):
 def F(t, col, parent, tree, errors):
     """函数调用"""
     if t.Token[1] == 'signal':
+        tree.add_node(Node(t.Token[2]), parent)
         match('signal', t)
         if t.Token[1] == '(':
             match('(', t)
@@ -511,8 +519,7 @@ def R(t, col, parent, tree, errors):
 def S(t, col, parent, tree, errors):
     """函数声明"""
 
-    sub1 = Node('fun_declare')
-    tree.add_node(sub1, parent)
+    sub1 = parent
     if t.Token[1] == '(':
         match('(', t)
         sub2 = Node('fun_declare_fpar_list')
@@ -583,12 +590,16 @@ def S(t, col, parent, tree, errors):
 def T(t, col, parent, tree, errors):
     """函数类型"""
     if t.Token[1] == 'int':
+        tree.add_node(Node('int'), parent)
         match('int', t)
     elif t.Token[1] == 'char':
+        tree.add_node(Node('char'), parent)
         match('char', t)
     elif t.Token[1] == 'float':
+        tree.add_node(Node('float'), parent)
         match('float', t)
     elif t.Token[1] == 'void':
+        tree.add_node(Node('void'), parent)
         match('void', t)
     else:
         # error
@@ -689,6 +700,7 @@ def Z(t, col, parent, tree, errors):
     if t.Token[1] == 'signal':
         match('signal', t)
         if t.Token[1] == '=':
+            tree.add_node(Node('='), parent)
             match('=', t)
             A_(t, col, parent, tree, errors)
         else:
@@ -1786,6 +1798,7 @@ def W_(t, col, parent, tree, errors):
     tree.add_node(sub2, sub1)
     T(t, col, sub2, tree, errors)
     if t.Token[1] == 'signal':
+        tree.add_node(Node(t.Token[2]), sub1)
         match('signal', t)
         if t.Token[1] == '(':
             match('(', t)
@@ -1882,7 +1895,7 @@ def A__(t, col, parent, tree, errors):
     if t.Token[1] in col.firsts['fun_define']:
         W_(t, col, parent, tree, errors)
         A__(t, col, parent, tree, errors)
-    pass
+
 
 
 

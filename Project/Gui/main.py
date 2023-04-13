@@ -3,15 +3,18 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QFileDialog
 from PyQt5 import uic, QtCore
 from Project.Gui.func import read_file, save_file
 from Project.Lib1_Words_Recognize.Recog_main import entry1
+from Project.Lib3_Grammer.main import entry
 
-
+path = '../Lib3_Grammer/test1'
 class Gui:
     def __init__(self):
         self.ui = uic.loadUi('wings.ui')
 
+        self.saving = ''
         self.lib1_svbt = self.ui.lib1_svbt
         self.lib1_selbt = self.ui.lib1_selbt
         self.lib1_exebt = self.ui.lib1_exebt
+        self.lib1_exebt1 = self.ui.lib1_exebt1
         self.lib1_src_text = self.ui.lib1_src_text
         self.lib1_des_text = self.ui.lib1_des_text
         self.lib1_des_text2 = self.ui.lib1_des_text2
@@ -19,6 +22,7 @@ class Gui:
         self.lib1_selbt.clicked.connect(self.button_fun1_1)
         self.lib1_exebt.clicked.connect(self.button_fun1_2)
         self.lib1_svbt.clicked.connect(self.button_fun1_3)
+        self.lib1_exebt1.clicked.connect(self.button_fun1_4)
 
     def show(self):
         self.ui.show()
@@ -58,6 +62,19 @@ class Gui:
         file_path = QFileDialog.getExistingDirectory(self.ui, "选择保存路径")
         if file_path:
             save_file(self.saving, file_path, self.lib1_flname)
+
+    def button_fun1_4(self):
+        if self.saving:
+            tree, errors = entry(self.saving, path)
+            print(tree, errors)
+            neg = ''
+            for err in errors:
+                neg += err + '\n'
+            self.lib1_des_text.setPlainText(str(tree))
+            self.lib1_des_text2.setPlainText(neg)
+        else:
+            return
+
 
 
 QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
