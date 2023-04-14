@@ -16,9 +16,7 @@
 """
 import os
 
-import pydot
 from treelib import Tree
-from graphviz import Source
 from Project.Lib3_Grammer.fun import *
 from Project.Lib3_Grammer.Collections import Collections
 
@@ -66,9 +64,7 @@ def entry(content, regulation, start='program'):
     errors = []
 
     tokenbox = init_tokenbox1(content)
-    print(regulation)
     col = Collections(regulation, start)
-    print(col)
 
     col.GET_FIRST_FOLLOW()
     tokenbox.get_next_token()
@@ -108,7 +104,7 @@ def entry(content, regulation, start='program'):
                 # 函数声明
             elif tokenbox.Token[1] == '=' or tokenbox.Token[1] == ',':
 
-                sub1 = Node('global_fun_declare')
+                sub1 = Node('global_var_declare')
                 tree.add_node(sub1, root)
                 tree.add_node(Node(typ), sub1)
                 tree.add_node(Node(name), sub1)
@@ -178,12 +174,12 @@ def entry(content, regulation, start='program'):
     while tokenbox.Token[1] in ['int', 'char', 'float', 'void']:
         W_(tokenbox, col, root, tree, errors)
         # 函数定义分析
-    if not errors:
-        tree.show()
+    # if not errors:
+    #     tree.show()
 
     return tree, errors
 
 
 # 测试
-content = read_file('Token/target.reg')
-print(entry(content, 'test1'))
+# content = read_file('Token/target.reg')
+# print(entry(content, 'test1'))

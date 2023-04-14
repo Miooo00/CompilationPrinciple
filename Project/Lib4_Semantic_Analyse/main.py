@@ -3,6 +3,7 @@ from Project.Lib3_Grammer.Collections import Collections
 from Project.Lib4_Semantic_Analyse.Tables import *
 
 
+
 def entry(token_file, regulation, start='program'):
     tokens = []
     const_table = Table()
