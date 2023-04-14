@@ -7,46 +7,65 @@ content = read_file('../Lib3_Grammer/Token/target.reg')
 tree, _ = entry(content, regulation)
 
 print(tree.show(key=False))
-print(tree.to_dict(sort=False))
+
 d = tree.to_dict(sort=False)
 
 
-def var_declare():
-    pass
+
 
 """div"""
-def var_type(tree, root, obj):
+
+
+def var_type(tree, root, obj, start):
     typ = tree[root]['children'][0]
     obj[1] = typ
 
-def var(tree, root, obj):
+
+def var(tree, root, obj, start):
     name = tree[root]['children'][0]
     obj[2] = name
+    res.append(obj[:])
 
-def var_val(tree, root, obj):
+
+def var_val(tree, root, obj, start):
     val = tree[root]['children'][0]
     obj[3] = val
+    res.append(obj[:])
+    obj[3] = ''
+    start[0] += 1
+    obj[0] = start[0]
 
 
 res = []
-def global_var_declare(tree, root, obj):
+def global_var_declare(tree, root, obj, start):
     child = tree[root]['children']
     for c in child:
-        if type(c) == 'dict':
+        if isinstance(c, dict):
             for k, _ in c.items():
                 if k == 'var_type':
-                    var_type(tree, k, obj)
+                    var_type(c, k, obj, start)
                 elif k == 'var':
-                    var(tree, k, obj)
+                    var(c, k, obj, start)
                 elif k == 'con':
-                    var_val(tree, k, obj)
+                    var_val(c, k, obj, start)
                 else:
-                    global_var_declare(tree, k, obj)
-                res.append(obj[:])
+                    global_var_declare(c, k, obj, start)
 
 
-    pass
 
+def var_declare(tree, root, obj, start):
+    child = tree[root]['children']
+    for c in child:
+        if isinstance(c, dict):
+            for k, _ in c.items():
+                if k == 'var_type':
+                    var_type(c, k, obj, start)
+                elif k == 'var':
+                    var(c, k, obj, start)
+                elif k == 'con':
+                    var_val(c, k, obj, start)
+                else:
+                    var_declare(c, k, obj, start)
 
 def con_declare():
     pass
@@ -57,14 +76,14 @@ def fun_declare():
 
 
 root = 'program'
-def create_sign_table(tree, root):
+def create_sign_table(tree, root, start=[1]):
     child = tree[root]['children']
     for c in child:
         for k, _ in c.items():
-            print(k)
+
             if k == 'global_var_declare':
-                obj = ['', '', '', '']
-                global_var_declare(c, k, obj)
+                obj = [start[0], '', '', '']
+                global_var_declare(c, k, obj, start)
                 pass
     #         elif k == 'fun_declare':
     #             pass
