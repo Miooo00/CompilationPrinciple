@@ -18,7 +18,6 @@ class VarItem:
         self.name = ''
         self.type = ''
         self.val = ''
-        self.varList = []
 
     def items_print(self):
         print(self.entry, self.name, self.type, self.val)

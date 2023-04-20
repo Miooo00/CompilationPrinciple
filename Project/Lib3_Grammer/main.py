@@ -2,6 +2,7 @@
 语法分析入口
 需要:
     词法分析结果文件行格式: [种别码, 'obj', 行号]
+    种别码可能不同,需要修改fun.py下 Tokenbox 类的 transformer 中内容
     语法规则:
         (递归下降,无左递归,无回溯.如A→B
         <div>取代|表示'或者', |用于逻辑运算或)
@@ -11,7 +12,14 @@
 不能:
     2、缺少for语句左大括号缺失判断,
         循环语句嵌套复合语句时后一个语句的大括号会被前一个识别,仅出现在大括号相邻情况
-    3、缺少error信息收集
+            (所有语句都必须加大括号,if、while等复合语句只有一句话也要)
+
+
+依赖:
+    pip install treelib
+
+tree.show()查看树状图
+errors 错误列表
 
 """
 import os
@@ -40,6 +48,7 @@ def init_tokenbox(content) -> TokenBox:
     tokenbox = TokenBox(tokens)
     return tokenbox
 
+
 def init_tokenbox1(content) -> TokenBox:
     tokens = []
     for line in content:
@@ -52,6 +61,7 @@ def init_tokenbox1(content) -> TokenBox:
     tokenbox = TokenBox(tokens)
     return tokenbox
 
+
 def entry(content, regulation, start='program'):
     """
     :param token_file: 词法分析结果
@@ -63,12 +73,19 @@ def entry(content, regulation, start='program'):
     root = tree.create_node('program')
     errors = []
 
+
+    """
+    
+    测试用init_tokenbox1(content)
+    gui用init_tokenbox(content)
+    
+    """
+
     tokenbox = init_tokenbox1(content)
     col = Collections(regulation, start)
 
     col.GET_FIRST_FOLLOW()
     tokenbox.get_next_token()
-
 
     while tokenbox.Token[1] != 'main':
         if tokenbox.Token[1] == 'const':
@@ -108,30 +125,37 @@ def entry(content, regulation, start='program'):
                 tree.add_node(sub1, root)
                 tree.add_node(Node(typ), sub1)
                 tree.add_node(Node(name), sub1)
-                print(sub1.data)
                 O(tokenbox, col, sub1, tree, errors)
                 # 变量声明
             else:
-                print(f'出现错误,函数定义缺少左括号,第{tokenbox.tokens[tokenbox.p-2][3]}行')
-                errors.append(f'出现错误,函数定义缺少左括号,第{tokenbox.tokens[tokenbox.p-2][3]}行')
-
-                U(tokenbox, col, root, tree, errors)
-                if tokenbox.Token[1] == ')':
-                    match(')', tokenbox)
-                    if tokenbox.Token[1] == ';':
-                        match(';', tokenbox)
-                    else:
-                        print(f'出现错误,函数定义缺少;号,第{tokenbox.tokens[tokenbox.p-2][3]}行')
-                        errors.append(f'出现错误,函数定义缺少;号,第{tokenbox.tokens[tokenbox.p-2][3]}行')
+                if tokenbox.Token[1] == ';':
+                    """全局变量声明"""
+                    sub1 = Node('global_var_declare')
+                    tree.add_node(sub1, root)
+                    tree.add_node(Node(typ), sub1)
+                    tree.add_node(Node(name), sub1)
+                    match(';', tokenbox)
                 else:
-                    print(f'出现错误,函数定义缺少右括号,第{tokenbox.tokens[tokenbox.p-2][3]}行')
-                    errors.append(f'出现错误,函数定义缺少右括号,第{tokenbox.tokens[tokenbox.p-2][3]}行')
-                    if tokenbox.Token[1] == ';':
-                        match(';', tokenbox)
+                    print(f'出现错误,函数定义缺少左括号,第{tokenbox.tokens[tokenbox.p-2][3]}行')
+                    errors.append(f'出现错误,函数定义缺少左括号,第{tokenbox.tokens[tokenbox.p-2][3]}行')
+
+                    U(tokenbox, col, root, tree, errors)
+                    if tokenbox.Token[1] == ')':
+                        match(')', tokenbox)
+                        if tokenbox.Token[1] == ';':
+                            match(';', tokenbox)
+                        else:
+                            print(f'出现错误,函数定义缺少;号,第{tokenbox.tokens[tokenbox.p-2][3]}行')
+                            errors.append(f'出现错误,函数定义缺少;号,第{tokenbox.tokens[tokenbox.p-2][3]}行')
                     else:
-                        print(f'出现错误,函数定义缺少;号,第{tokenbox.tokens[tokenbox.p-2][3]}行')
-                        errors.append(f'出现错误,函数定义缺少;号,第{tokenbox.tokens[tokenbox.p-2][3]}行')
-                # 错误
+                        print(f'出现错误,函数定义缺少右括号,第{tokenbox.tokens[tokenbox.p-2][3]}行')
+                        errors.append(f'出现错误,函数定义缺少右括号,第{tokenbox.tokens[tokenbox.p-2][3]}行')
+                        if tokenbox.Token[1] == ';':
+                            match(';', tokenbox)
+                        else:
+                            print(f'出现错误,函数定义缺少;号,第{tokenbox.tokens[tokenbox.p-2][3]}行')
+                            errors.append(f'出现错误,函数定义缺少;号,第{tokenbox.tokens[tokenbox.p-2][3]}行')
+                    # 错误
         else:
             if tokenbox.Token[2].startswith('i'):
                 tokenbox.Token[1] = f = 'int'
@@ -145,8 +169,11 @@ def entry(content, regulation, start='program'):
                 tokenbox.Token[1] = f = 'void'
             elif tokenbox.Token[2].startswith('co'):
                 tokenbox.Token[1] = f = 'const'
-            print(f'出现函数声明错误:{tokenbox.Token[2]},第{tokenbox.Token[3]}行')
-            errors.append(f'出现函数声明错误:{tokenbox.Token[2]},第{tokenbox.Token[3]}行')
+            else:
+                tokenbox.p -= 1
+                tokenbox.Token[1] = 'int'
+            print(f'出现函数声明或变量声明错误,第{tokenbox.Token[3]}行')
+            errors.append(f'出现函数声明或变量声明错误,第{tokenbox.Token[3]}行')
     tokenbox.get_next_token()
     if tokenbox.Token[1] != '(':
         print(f'出现错误,main函数未左闭合,第{tokenbox.tokens[tokenbox.p - 2][3]}行')
@@ -168,9 +195,9 @@ def entry(content, regulation, start='program'):
         errors.append(f'出现错误,复合语句缺少左大括号,第{tokenbox.tokens[tokenbox.p-2][3]}行')
         tokenbox.p -= 1
         tokenbox.Token = [-1, '{', 'None', -1]
-
-
-    G_(tokenbox, col, root, tree, errors)
+    main_s = Node('main')
+    tree.add_node(main_s, root)
+    G_(tokenbox, col, main_s, tree, errors)
     while tokenbox.Token[1] in ['int', 'char', 'float', 'void']:
         W_(tokenbox, col, root, tree, errors)
         # 函数定义分析
@@ -182,4 +209,6 @@ def entry(content, regulation, start='program'):
 
 # 测试
 # content = read_file('Token/target.reg')
-# print(entry(content, 'test1'))
+# t, err = entry(content, 'test1')
+# t.show()
+# print(err)

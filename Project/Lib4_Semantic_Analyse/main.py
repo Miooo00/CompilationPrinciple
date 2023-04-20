@@ -7,6 +7,7 @@ from Project.Lib4_Semantic_Analyse.Tables import *
 def entry(token_file, regulation, start='program'):
     tokens = []
     const_table = Table()
+    var_table = Table()
     with open(token_file, 'r', encoding='utf-8') as fp:
         content = fp.readlines()
         for line in content:
@@ -20,10 +21,11 @@ def entry(token_file, regulation, start='program'):
     col.GET_FIRST_FOLLOW()
 
     tokenbox.get_next_token()
+
     while tokenbox.Token[1] != 'main':
         if tokenbox.Token[1] == 'const':
             # 常量声明
-            L(tokenbox, col, const_table)
+            L(tokenbox, col, None, const_table)
         elif tokenbox.Token[1] in ['int', 'char', 'float', 'void']:
             tokenbox.get_next_token()
             if tokenbox.Token[1] == 'main':
@@ -34,17 +36,19 @@ def entry(token_file, regulation, start='program'):
                 S(tokenbox, col)
                 # 函数声明
             elif tokenbox.Token[1] == '=' or tokenbox.Token[1] == ',':
-                O(tokenbox, col)
+                O(tokenbox, col, None, var_table)
                 # 变量声明
     tokenbox.get_next_token()
     tokenbox.get_next_token()
     # 处理复合语句
     tokenbox.get_next_token()
-    G_(tokenbox, col)
+    G_(tokenbox, col, var_table)
     while tokenbox.Token[1] in ['int', 'char', 'float', 'void']:
         W_(tokenbox, col)
 
     for i in const_table.t:
+        i.items_print()
+    for i in var_table.t:
         i.items_print()
 
 

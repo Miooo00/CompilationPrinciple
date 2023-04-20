@@ -3,6 +3,7 @@ from treelib import Node
 
 class TokenBox:
     def __init__(self, tokens):
+
         self.tokens = tokens
         self.p = 0
         self.length = len(self.tokens)
@@ -16,6 +17,7 @@ class TokenBox:
             self.Token = res
             return res
         else:
+            # [种别码, token对应终结符(参考transformer), 当前token, 行号]
             self.Token = [-1, 'None', 'None', -1]
             return None
 
@@ -248,6 +250,11 @@ def D(t, col, parent, tree, errors):
         tree.add_node(Node(t.Token[2]), parent)
         match('sig_con', t)
     else:
+        errors.append(f'出现错误,常量未赋初值,第{t.tokens[t.p - 2][3]}行')
+        print(f'出现错误,常量未赋初值,第{t.tokens[t.p - 2][3]}行')
+        t.p -= 1
+        t.Token = [-1, 'sig_con', 'None', -1]
+        match('sig_con', t)
         pass
 
 
@@ -331,9 +338,9 @@ def J(t, col, parent, tree, errors):
 def K(t, col, parent, tree, errors):
     """值声明"""
     if t.Token[1] in col.firsts['con_declare']:
-        sub1 = Node('con_declare')
-        tree.add_node(sub1, parent)
-        L(t, col, sub1, tree, errors)
+        # sub1 = Node('con_declare')
+        # tree.add_node(sub1, parent)
+        L(t, col, parent, tree, errors)
     elif t.Token[1] in col.firsts['var_declare']:
         O(t, col, parent, tree, errors)
     else:
@@ -398,7 +405,7 @@ def N(t, col, parent, tree, errors):
         if t.Token[1] == '=':
             match('=', t)
 
-            sub = Node('constant')
+            sub = Node('con')
             tree.add_node(sub, parent)
             D(t, col, sub, tree, errors)
 
@@ -406,7 +413,10 @@ def N(t, col, parent, tree, errors):
             tree.add_node(sub1, parent)
             N1(t, col, sub1, tree, errors)
         else:
-            # error
+            print(f'出现常量声明错误,未赋初值，第{t.tokens[t.p - 2][3]}行')
+            errors.append(f'出现常量声明错误,未赋初值，第{t.tokens[t.p - 2][3]}行')
+            if t.Token[1] == ';':
+                match(';', t)
             pass
     else:
         # error
@@ -493,6 +503,7 @@ def Q(t, col, parent, tree, errors):
 def Q1(t, col, parent, tree, errors):
     """单变量声明'"""
     if t.Token[1] == '=':
+        tree.add_node(Node('='), parent)
         match('=', t)
         sub = Node('expression')
         tree.add_node(sub, parent)
@@ -698,6 +709,7 @@ def Y(t, col, parent, tree, errors):
 def Z(t, col, parent, tree, errors):
     """赋值表达式"""
     if t.Token[1] == 'signal':
+        tree.add_node(Node(t.Token[2]), parent)
         match('signal', t)
         if t.Token[1] == '=':
             tree.add_node(Node('='), parent)
@@ -752,9 +764,7 @@ def B_(t, col, parent, tree, errors):
         tree.add_node(sub2, parent)
         F_(t, col, sub2, tree, errors)
     elif t.Token[1] in col.firsts['complex_statement']:
-        sub3 = Node('complex_statement')
-        tree.add_node(sub3, parent)
-        G_(t, col, sub3, tree, errors)
+        G_(t, col, parent, tree, errors)
     else:
         # error
         pass

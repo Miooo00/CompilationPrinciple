@@ -1,22 +1,13 @@
-int a=5, b=3;
-int c=4, d=7;
 
-int sum(int x,int y);
 
-main(){
-
-    int N = read() ;
-
-    a = sum(sum(3,4),N) ;
-    write(a);
-
-}
-
-int sum(int sum_x,int sum_y){
-
-    int result ;
-    result = sum_x + sum_y ;
-
-    return result ;
+main()
+{
+    /* 1/1 */
+    int x1 = 5;
+    x1 = (3+2)*5;
+    x1 = x1 + 1;
+    x1 = 5+(2+3)+5*6;
+    x1 = 5*(3+2)+x1;
 
 }
+

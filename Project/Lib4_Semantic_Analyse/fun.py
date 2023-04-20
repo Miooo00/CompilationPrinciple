@@ -1,6 +1,6 @@
 import copy
 
-from Project.Lib4_Semantic_Analyse.Tables import ConstItem
+from Project.Lib4_Semantic_Analyse.Tables import ConstItem, VarItem
 
 
 class TokenBox:
@@ -142,9 +142,9 @@ Z_ 程序
 A__ 函数块
 """
 
-def A(t, col):
+def A(t, col, item, var_table):
     """算术表达式"""
-    B(t, col)
+    B(t, col, item, var_table)
     A1(t, col)
     pass
 
@@ -160,9 +160,9 @@ def A1(t, col):
     pass
 
 
-def B(t, col):
+def B(t, col, item, var_table):
     """项"""
-    C(t, col)
+    C(t, col, item, var_table)
     B1(t, col)
     pass
 
@@ -181,7 +181,7 @@ def B1(t, col):
     pass
 
 
-def C(t, col):
+def C(t, col, item, var_table):
     """因子"""
     if t.Token[1] == '(':
         match('(', t)
@@ -189,32 +189,33 @@ def C(t, col):
         if t.Token[1] == ')':
             match(')', t)
     elif t.Token[1] in col.firsts['con']:
-        D(t, col)
+        D(t, col, item, var_table)
     elif t.Token[1] in col.firsts['var'] and (t.tokens[t.p][1] != '('):
-        E(t, col)
+        E(t, col, item, var_table)
     elif t.Token[1] in col.firsts['fun_invoke']:
-        F(t, col)
+        F(t, col, item, var_table)
     else:
         pass
 
 
-def D(t, col, c_obj=None, c_table=None):
+def D(t, col, item=None, table=None):
     """常量"""
     if t.Token[1] == 'num_con':
-        if c_obj:
-            c_obj.val = t.Token[2]
+        if item:
+            item.val = t.Token[2]
         match('num_con', t)
     elif t.Token[1] == 'sig_con':
-        if c_obj:
-            c_obj.val = t.Token[2]
+        if item:
+            item.val = t.Token[2]
         match('sig_con', t)
-    if c_table:
-        c_table.add_obj(c_obj)
+    if table:
+        table.add_obj(item)
 
 
-def E(t, col):
+def E(t, col, item, var_table):
     """变量"""
     if t.Token[1] == 'signal':
+        item.name = t.Token[2]
         match('signal', t)
     else:
         pass
@@ -259,10 +260,10 @@ def H1(t, col):
     pass
 
 
-def I(t, col):
+def I(t, col, var_table):
     """语句"""
     if t.Token[1] in col.firsts['declare_statement']:
-        J(t, col)
+        J(t, col, var_table)
     elif t.Token[1] in col.firsts['exe_statement']:
         B_(t, col)
     else:
@@ -270,29 +271,34 @@ def I(t, col):
         pass
 
 
-def J(t, col):
+def J(t, col, var_table):
     """声明语句"""
     if t.Token[1] in col.firsts['v_declare']:
-        K(t, col)
+        K(t, col, var_table)
     elif t.Token[1] in col.firsts['fun_declare']:
-        S(t, col)
+        S(t, col, var_table)
     pass
 
 
-def K(t, col):
+def K(t, col, var_table):
     """值声明"""
     if t.Token[1] in col.firsts['con_declare']:
-        L(t, col)
+        obj = ConstItem()
+        L(t, col, obj, var_table)
     elif t.Token[1] in col.firsts['var_declare']:
-        O(t, col)
+        obj = VarItem()
+        O(t, col, obj, var_table)
     else:
         # error
         pass
 
 
-def L(t, col, c_table):
+def L(t, col, item, c_table):
     """常量声明"""
-    c_obj = ConstItem()
+    if not item:
+        c_obj = ConstItem()
+    else:
+        c_obj = item
     if t.Token[1] == 'const':
         match('const', t)
         M(t, col, c_obj, c_table)
@@ -343,54 +349,61 @@ def N1(t, col, c_obj, c_table):
         pass
 
 
-def O(t, col):
+def O(t, col, item, var_table):
     """变量声明"""
-    R(t, col)
-    P(t, col)
+    if not item:
+        obj = VarItem()
+    else:
+        obj = item
+    R(t, col, obj, var_table)
+    P(t, col, obj, var_table)
     pass
 
 
-def P(t, col):
+def P(t, col, item, var_table):
     """变量声明表"""
-    Q(t, col)
-    P1(t, col)
+    Q(t, col, item, var_table)
+    P1(t, col, item, var_table)
     pass
 
 
-def P1(t, col):
+def P1(t, col, item, var_table):
     """变量声明表'"""
     if t.Token[1] == ';' or t.Token[1] == ";":
         match(';', t)
     elif t.Token[1] == ',' or t.Token[1] == ",":
         match(',', t)
-        P(t, col)
+        P(t, col, item, var_table)
     else:
         # error
         pass
 
 
-def Q(t, col):
+def Q(t, col, item, var_table):
     """单变量声明"""
-    E(t, col)
-    Q1(t, col)
+    E(t, col, item, var_table)
+    Q1(t, col, item, var_table)
 
 
-def Q1(t, col):
+def Q1(t, col, item, var_table):
     """单变量声明'"""
     if t.Token[1] == '=':
         match('=', t)
-        A_(t, col)
+        A_(t, col, item, var_table)
     pass
 
 
-def R(t, col):
+def R(t, col, item, var_table):
     """变量类型"""
     if t.Token[1] == 'int':
         match('int', t)
+        item.type = 'int'
     elif t.Token[1] == 'char':
         match('char', t)
+        item.type = 'char'
     elif t.Token[1] == 'float':
         match('float', t)
+        item.type = 'float'
     else:
         # error
         pass
@@ -519,10 +532,10 @@ def Z(t, col):
         pass
 
 
-def A_(t, col):
+def A_(t, col, item, var_table):
     """表达式"""
     if t.Token[1] in col.firsts['arg_exp'] and conditon(t) and conditon1(t) and (t.tokens[t.p][1] != '='):
-        A(t, col)
+        A(t, col, item, var_table)
     elif t.Token[1] in col.firsts['rel_expression'] and (t.tokens[t.p][1] != '=' and conditon1(t)):
         U_(t, col)
     elif t.Token[1] in col.firsts['bool_expression'] and (t.tokens[t.p][1] != '='):
@@ -595,11 +608,11 @@ def F_(t, col):
         pass
 
 
-def G_(t, col):
+def G_(t, col, var_table):
     """复合语句"""
     if t.Token[1] == '{':
         match('{', t)
-        H_(t, col)
+        H_(t, col, var_table)
         if t.Token[1] == '}':
             match('}', t)
         else:
@@ -610,17 +623,17 @@ def G_(t, col):
         pass
 
 
-def H_(t, col):
+def H_(t, col, var_table):
     """语句表"""
-    I(t, col)
-    H_1(t, col)
+    I(t, col, var_table)
+    H_1(t, col, var_table)
     pass
 
 
-def H_1(t, col):
+def H_1(t, col, var_table):
     """语句表'"""
     if t.Token[1] in col.firsts['statement_list']:
-        H_(t, col)
+        H_(t, col, var_table)
     pass
 
 
