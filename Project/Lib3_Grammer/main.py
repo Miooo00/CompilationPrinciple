@@ -81,7 +81,7 @@ def entry(content, regulation, start='program'):
     
     """
 
-    tokenbox = init_tokenbox1(content)
+    tokenbox = init_tokenbox(content)
     col = Collections(regulation, start)
 
     col.GET_FIRST_FOLLOW()
@@ -210,5 +210,5 @@ def entry(content, regulation, start='program'):
 # 测试
 # content = read_file('Token/target.reg')
 # t, err = entry(content, 'test1')
-# t.show()
+# t.show(sorting=False)
 # print(err)

@@ -11,18 +11,23 @@ class Gui:
         self.ui = uic.loadUi('wings.ui')
 
         self.saving = ''
-        self.lib1_svbt = self.ui.lib1_svbt
-        self.lib1_selbt = self.ui.lib1_selbt
-        self.lib1_exebt = self.ui.lib1_exebt
-        self.lib1_exebt1 = self.ui.lib1_exebt1
+        # self.lib1_svbt = self.ui.lib1_svbt
+        # self.lib1_selbt = self.ui.lib1_selbt
+        # self.lib1_exebt = self.ui.lib1_exebt
+        # self.lib1_exebt1 = self.ui.lib1_exebt1
         self.lib1_src_text = self.ui.lib1_src_text
         self.lib1_des_text = self.ui.lib1_des_text
         self.lib1_des_text2 = self.ui.lib1_des_text2
+        self.openfile = self.ui.action_open
+        self.savefile = self.ui.action_save
+        self.lib1_menu1_fun = self.ui.action_run1
+        self.lib1_menu2_fun = self.ui.action_run2
         self.lib1_svpath = ''
-        self.lib1_selbt.clicked.connect(self.button_fun1_1)
-        self.lib1_exebt.clicked.connect(self.button_fun1_2)
-        self.lib1_svbt.clicked.connect(self.button_fun1_3)
-        self.lib1_exebt1.clicked.connect(self.button_fun1_4)
+        # self.lib1_exebt1.clicked.connect(self.button_fun1_4)
+        self.openfile.triggered.connect(self.button_fun1_1)
+        self.savefile.triggered.connect(self.button_fun1_3)
+        self.lib1_menu1_fun.triggered.connect(self.button_fun1_2)
+        self.lib1_menu2_fun.triggered.connect(self.button_fun1_4)
 
     def show(self):
         self.ui.show()

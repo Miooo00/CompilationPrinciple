@@ -37,9 +37,9 @@
     <property name="geometry">
      <rect>
       <x>300</x>
-      <y>110</y>
+      <y>40</y>
       <width>271</width>
-      <height>151</height>
+      <height>221</height>
      </rect>
     </property>
     <property name="font">
@@ -55,9 +55,9 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>110</y>
+      <y>40</y>
       <width>271</width>
-      <height>301</height>
+      <height>371</height>
      </rect>
     </property>
     <property name="font">
@@ -76,7 +76,7 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>90</y>
+      <y>20</y>
       <width>581</width>
       <height>16</height>
      </rect>
@@ -91,45 +91,6 @@
     </property>
     <property name="orientation">
      <enum>Qt::Horizontal</enum>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="lib1_selbt">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>111</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>选择文件</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="lib1_svbt">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>60</y>
-      <width>111</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>保存tokens文件</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="lib1_exebt">
-    <property name="geometry">
-     <rect>
-      <x>160</x>
-      <y>10</y>
-      <width>111</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>词法分析</string>
     </property>
    </widget>
    <widget class="QPlainTextEdit" name="lib1_des_text2">
@@ -166,19 +127,6 @@
      <enum>Qt::Horizontal</enum>
     </property>
    </widget>
-   <widget class="QPushButton" name="lib1_exebt1">
-    <property name="geometry">
-     <rect>
-      <x>160</x>
-      <y>60</y>
-      <width>111</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>语法分析</string>
-    </property>
-   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -193,10 +141,36 @@
     <property name="title">
      <string>词法分析</string>
     </property>
-    <addaction name="action"/>
-    <addaction name="action_2"/>
+    <addaction name="action_run1"/>
    </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>语法分析</string>
+    </property>
+    <addaction name="action_run2"/>
+   </widget>
+   <widget class="QMenu" name="menu_3">
+    <property name="title">
+     <string>语义分析</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menu_4">
+    <property name="title">
+     <string>中间代码生成</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menu_5">
+    <property name="title">
+     <string>菜单</string>
+    </property>
+    <addaction name="action_open"/>
+    <addaction name="action_save"/>
+   </widget>
+   <addaction name="menu_5"/>
    <addaction name="menu"/>
+   <addaction name="menu_2"/>
+   <addaction name="menu_3"/>
+   <addaction name="menu_4"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="action">
@@ -207,6 +181,26 @@
   <action name="action_2">
    <property name="text">
     <string>保存</string>
+   </property>
+  </action>
+  <action name="action_open">
+   <property name="text">
+    <string>打开文件</string>
+   </property>
+  </action>
+  <action name="action_save">
+   <property name="text">
+    <string>保存文件</string>
+   </property>
+  </action>
+  <action name="action_run1">
+   <property name="text">
+    <string>运行</string>
+   </property>
+  </action>
+  <action name="action_run2">
+   <property name="text">
+    <string>运行</string>
    </property>
   </action>
  </widget>

@@ -1608,19 +1608,33 @@ def O_1(t, col, parent, tree, errors):
 def P_(t, col, parent, tree, errors):
     """循环执行语句"""
     if t.Token[1] in col.firsts['cir_if_statement']:
-        Q_(t, col, parent, tree, errors)
+        sub1 = Node('cir_if_statement')
+        tree.add_node(sub1, parent)
+        Q_(t, col, sub1, tree, errors)
     elif t.Token[1] in col.firsts['for_statement']:
-        J_(t, col, parent, tree, errors)
+        sub2 = Node('for_statement')
+        tree.add_node(sub2, parent)
+        J_(t, col, sub2, tree, errors)
     elif t.Token[1] in col.firsts['while_statement']:
-        K_(t, col, parent, tree, errors)
+        sub3 = Node('while_statement')
+        tree.add_node(sub3, parent)
+        K_(t, col, sub3, tree, errors)
     elif t.Token[1] in col.firsts['do_while_statement']:
-        L_(t, col, parent, tree, errors)
+        sub4 = Node('do_while_statement')
+        tree.add_node(sub4, parent)
+        L_(t, col, sub4, tree, errors)
     elif t.Token[1] in col.firsts['return_statement']:
-        R_(t, col, parent, tree, errors)
+        sub5 = Node('return_statement')
+        tree.add_node(sub5, parent)
+        R_(t, col, sub5, tree, errors)
     elif t.Token[1] in col.firsts['break_statement']:
-        S_(t, col, parent, tree, errors)
+        sub6 = Node('break_statement')
+        tree.add_node(sub6, parent)
+        S_(t, col, sub6, tree, errors)
     elif t.Token[1] in col.firsts['continue_statement']:
-        T_(t, col, parent, tree, errors)
+        sub7 = Node('continue_statement')
+        tree.add_node(sub7, parent)
+        T_(t, col, sub7, tree, errors)
     else:
         # error
         pass
