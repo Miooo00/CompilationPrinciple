@@ -1,7 +1,10 @@
 import copy
 
-from Project.Lib4_Semantic_Analyse.Tables import ConstItem, VarItem
+from Project.Lib4_Semantic_Analyse.Tables import ConstItem, VarItem, Node, Temp
 
+
+
+temp_obj = Temp()
 
 class TokenBox:
     def __init__(self, tokens):
@@ -142,83 +145,102 @@ Z_ 程序
 A__ 函数块
 """
 
-def A(t, col, item, var_table):
+def A(t, col, item, var_table, op_table, node):
     """算术表达式"""
-    B(t, col, item, var_table)
-    A1(t, col)
-    pass
+    # 算术操作[ , , ,T] 添加四元式
+    B(t, col, item, var_table, op_table, node)
+    if node:
+        if node[0] and node[1] and node[2] and node[3]:
+            op_table.add_node(node[:])
+            node[0] = node[1] = node[2] = node[3] = ''
+    # 若node填满加表
+    A1(t, col, item, var_table, op_table, node)
 
 
-def A1(t, col):
+
+def A1(t, col, item, var_table, op_table, node):
     """ 算术表达式' """
     if t.Token[1] == '+':
+        node[0] = '+'
         match('+', t)
-        A(t, col)
+        A(t, col, item, var_table, op_table, node)
     elif t.Token[1] == '-':
+        node[0] = '-'
         match('-', t)
-        A(t, col)
-    pass
+        A(t, col, item, var_table, op_table, node)
 
 
-def B(t, col, item, var_table):
+def B(t, col, item, var_table, op_table, node):
     """项"""
-    C(t, col, item, var_table)
-    B1(t, col)
-    pass
+    C(t, col, item, var_table, op_table, node)
+    B1(t, col, item, var_table, op_table, node)
 
 
-def B1(t, col):
+def B1(t, col, item, var_table, op_table, node):
     """ 项' """
     if t.Token[1] == '*':
+        # 常量 [*, , con, T]
         match('*', t)
-        B(t, col)
+        B(t, col, item, var_table, op_table, node)
     elif t.Token[1] == '/':
         match('/', t)
-        B(t, col)
+        B(t, col, item, var_table, op_table, node)
     elif t.Token[1] == '%':
         match('%', t)
-        B(t, col)
-    pass
+        B(t, col, item, var_table, op_table, node)
 
 
-def C(t, col, item, var_table):
+def C(t, col, item, var_table, op_table, node):
     """因子"""
     if t.Token[1] == '(':
         match('(', t)
-        A(t, col)
+        A(t, col, item, var_table, op_table, node)
         if t.Token[1] == ')':
             match(')', t)
     elif t.Token[1] in col.firsts['con']:
-        D(t, col, item, var_table)
+        # 常量 [, , con, T]  /1
+        # 常量 [*, con1 , con, T] /2
+        D(t, col, item, var_table, op_table, node)
     elif t.Token[1] in col.firsts['var'] and (t.tokens[t.p][1] != '('):
-        E(t, col, item, var_table)
+        # 变量 new = [, , var,T]
+        E(t, col, item, var_table, op_table, node)
     elif t.Token[1] in col.firsts['fun_invoke']:
-        F(t, col, item, var_table)
-    else:
-        pass
+        F(t, col, item, var_table, op_table)
 
 
-def D(t, col, item=None, table=None):
+def D(t, col, item=None, table=None, op_table=None, node=None):
     """常量"""
     if t.Token[1] == 'num_con':
         if item:
             item.val = t.Token[2]
+        if node:
+            if not node[2]:
+                node[2] = t.Token[2]
+            elif not node[1]:
+                node[1] = t.Token[2]
         match('num_con', t)
     elif t.Token[1] == 'sig_con':
         if item:
             item.val = t.Token[2]
+        if node:
+            if not node[2]:
+                node[2] = t.Token[2]
+            elif not node[1]:
+                node[1] = t.Token[2]
         match('sig_con', t)
-    if table:
-        table.add_obj(item)
 
 
-def E(t, col, item, var_table):
+def E(t, col, item, var_table, op_table, node=None):
     """变量"""
     if t.Token[1] == 'signal':
-        item.name = t.Token[2]
+        if item:
+            item.name = t.Token[2]
+        if node:
+            if not node[2]:
+                node[2] = t.Token[2]
+            elif not node[1]:
+                node[1] = t.Token[2]
         match('signal', t)
-    else:
-        pass
 
 
 def F(t, col):
@@ -230,26 +252,18 @@ def F(t, col):
             G(t, col)
             if t.Token[1] == ')':
                 match(')', t)
-            else:
-                pass
-        else:
-            pass
-    else:
-        pass
 
 
 def G(t, col):
     """实参列表"""
     if t.Token[1] in col.firsts['real_par']:
         H(t, col)
-    pass
 
 
 def H(t, col):
     """实参"""
     A_(t, col)
     H1(t, col)
-    pass
 
 
 def H1(t, col):
@@ -257,40 +271,33 @@ def H1(t, col):
     if t.Token[1] == ',':
         match(',', t)
         H(t, col)
-    pass
 
 
-def I(t, col, var_table):
+def I(t, col, item, var_table, op_table):
     """语句"""
     if t.Token[1] in col.firsts['declare_statement']:
-        J(t, col, var_table)
+        J(t, col, item, var_table, op_table)
     elif t.Token[1] in col.firsts['exe_statement']:
-        B_(t, col)
-    else:
-        # error
-        pass
+        B_(t, col, item, var_table, op_table)
 
 
-def J(t, col, var_table):
+
+def J(t, col, item, var_table, op_table):
     """声明语句"""
     if t.Token[1] in col.firsts['v_declare']:
-        K(t, col, var_table)
+        K(t, col, item, var_table, op_table)
     elif t.Token[1] in col.firsts['fun_declare']:
-        S(t, col, var_table)
-    pass
+        S(t, col, item, var_table, op_table)
 
 
-def K(t, col, var_table):
+def K(t, col, item, var_table, op_table):
     """值声明"""
     if t.Token[1] in col.firsts['con_declare']:
         obj = ConstItem()
-        L(t, col, obj, var_table)
+        L(t, col, item, var_table, op_table)
     elif t.Token[1] in col.firsts['var_declare']:
         obj = VarItem()
-        O(t, col, obj, var_table)
-    else:
-        # error
-        pass
+        O(t, col, item, var_table, op_table)
 
 
 def L(t, col, item, c_table):
@@ -299,13 +306,11 @@ def L(t, col, item, c_table):
         c_obj = ConstItem()
     else:
         c_obj = item
+    c_table.add_obj(c_obj)
     if t.Token[1] == 'const':
         match('const', t)
         M(t, col, c_obj, c_table)
         N(t, col, c_obj, c_table)
-    else:
-        # error
-        pass
 
 
 def M(t, col, c_obj, c_table):
@@ -333,103 +338,94 @@ def N(t, col, c_obj, c_table):
     # 语义处理阶段应当是不存在语法错误
 
 
-
 def N1(t, col, c_obj, c_table):
     """常量声明表'"""
     if t.Token[1] == ';':
         match(';', t)
     elif t.Token[1] == ',':
         match(',', t)
-        next_cobj = copy.deepcopy(c_obj)
-        next_cobj.name = ''
-        next_cobj.val = ''
+        next_cobj = ConstItem()
+        next_cobj.type = c_obj.type
+        c_table.add_obj(next_cobj)
         N(t, col, next_cobj, c_table)
-    else:
-        # error
-        pass
 
 
-def O(t, col, item, var_table):
+def O(t, col, item, var_table, op_table):
     """变量声明"""
     if not item:
         obj = VarItem()
     else:
         obj = item
-    R(t, col, obj, var_table)
-    P(t, col, obj, var_table)
-    pass
+    var_table.add_obj(obj)
+    R(t, col, obj, var_table, op_table)
+    P(t, col, obj, var_table, op_table)
 
 
-def P(t, col, item, var_table):
+def P(t, col, item, var_table, op_table):
     """变量声明表"""
-    Q(t, col, item, var_table)
-    P1(t, col, item, var_table)
-    pass
+    Q(t, col, item, var_table, op_table)
+    P1(t, col, item, var_table, op_table)
 
 
-def P1(t, col, item, var_table):
+def P1(t, col, item, var_table, op_table):
     """变量声明表'"""
     if t.Token[1] == ';' or t.Token[1] == ";":
         match(';', t)
     elif t.Token[1] == ',' or t.Token[1] == ",":
         match(',', t)
-        P(t, col, item, var_table)
-    else:
-        # error
-        pass
+        new_item = VarItem()
+        new_item.type = item.type
+        var_table.add_obj(new_item)
+        P(t, col, new_item, var_table, op_table)
 
 
-def Q(t, col, item, var_table):
+def Q(t, col, item, var_table, op_table):
     """单变量声明"""
-    E(t, col, item, var_table)
-    Q1(t, col, item, var_table)
+    E(t, col, item, var_table, op_table)
+    Q1(t, col, item, var_table, op_table)
 
 
-def Q1(t, col, item, var_table):
+def Q1(t, col, item, var_table, op_table):
     """单变量声明'"""
     if t.Token[1] == '=':
         match('=', t)
-        A_(t, col, item, var_table)
-    pass
+        A_(t, col, item, var_table, op_table)
 
 
-def R(t, col, item, var_table):
+def R(t, col, item, var_table, op_table):
     """变量类型"""
     if t.Token[1] == 'int':
         match('int', t)
-        item.type = 'int'
+        if isinstance(item, VarItem):
+            item.type = 'int'
+        else:
+            item.parLen += 1
+            item.para.append('int')
     elif t.Token[1] == 'char':
         match('char', t)
-        item.type = 'char'
+        if isinstance(item, VarItem):
+            item.type = 'char'
+        else:
+            item.parLen += 1
+            item.para.append('char')
     elif t.Token[1] == 'float':
         match('float', t)
-        item.type = 'float'
-    else:
-        # error
-        pass
+        if isinstance(item, VarItem):
+            item.type = 'float'
+        else:
+            item.parLen += 1
+            item.para.append('float')
 
 
-def S(t, col):
+def S(t, col, item, fun_table):
     """函数声明"""
     if t.Token[1] == '(':
         match('(', t)
-        U(t, col)
+        U(t, col, item, fun_table)
         if t.Token[1] == ')':
             match(')', t)
             if t.Token[1] == ';':
                 match(';', t)
-            else:
-                # error
-                pass
-        else:
-            # error
-            pass
-    else:
-        # error
-        pass
-    # else:
-    #     # error
-    #     pass
 
 
 def T(t, col):
@@ -442,40 +438,33 @@ def T(t, col):
         match('float', t)
     elif t.Token[1] == 'void':
         match('void', t)
-    else:
-        # error
-        pass
 
 
-def U(t, col):
+def U(t, col, item, fun_table):
     """函数声明形参列表"""
     if t.Token[1] in col.firsts['fun_declare_fpar']:
-        V(t, col)
-    pass
+        V(t, col, item, fun_table)
 
 
-def V(t, col):
+def V(t, col, item, fun_table):
     """函数声明形参"""
-    R(t, col)
+    R(t, col, item, fun_table)
     if t.Token[1] == 'signal':
         match('signal', t)
-    V1(t, col)
-    pass
+    V1(t, col, item, fun_table)
 
 
-def V1(t, col):
+def V1(t, col, item, fun_table):
     """函数声明形参'"""
     if t.Token[1] == ',':
         match(',', t)
-        V(t, col)
-    pass
+        V(t, col, item, fun_table)
 
 
 def W(t, col):
     """布尔表达式"""
     X(t, col)
     W1(t, col)
-    pass
 
 
 def W1(t, col):
@@ -484,14 +473,11 @@ def W1(t, col):
         match('||', t)
         W(t, col)
 
-    pass
-
 
 def X(t, col):
     """布尔项"""
     Y(t, col)
     X1(t, col)
-    pass
 
 
 def X1(t, col):
@@ -499,7 +485,6 @@ def X1(t, col):
     if t.Token[1] == '&&':
         match('&&', t)
         X(t, col)
-    pass
 
 
 def Y(t, col):
@@ -512,73 +497,62 @@ def Y(t, col):
     elif t.Token[1] == '!':
         match('!', t)
         W1(t, col)
-    else:
-        # error
-        pass
 
 
-def Z(t, col):
+def Z(t, col, item, var_table, op_table):
     """赋值表达式"""
     if t.Token[1] == 'signal':
+        obj = t.Token[2]
         match('signal', t)
         if t.Token[1] == '=':
             match('=', t)
-            A_(t, col)
-        else:
-            # error
-            pass
-    else:
-        # error
-        pass
+            temp = temp_obj.newtemp()
+            # node = Node(op='=', b=temp, c=obj)
+            node = ['=', '', temp, obj]
+            op_table.add_node(node[:])
+            # 赋值操作[=, ,T,signal] 需要A_返回值 , 传T的值
+            # n = Node(c=temp)
+            node = ['', '', '', temp]
+            A_(t, col, item, var_table, op_table, node)
+            # 添加四元式
 
 
-def A_(t, col, item, var_table):
+def A_(t, col, item, var_table, op_table, node=None):
     """表达式"""
     if t.Token[1] in col.firsts['arg_exp'] and conditon(t) and conditon1(t) and (t.tokens[t.p][1] != '='):
-        A(t, col, item, var_table)
+        # 赋值操作[=, ,T ,signal] 添加四元式
+        A(t, col, item, var_table, op_table, node)
     elif t.Token[1] in col.firsts['rel_expression'] and (t.tokens[t.p][1] != '=' and conditon1(t)):
         U_(t, col)
     elif t.Token[1] in col.firsts['bool_expression'] and (t.tokens[t.p][1] != '='):
         W(t, col)
     elif t.Token[1] in col.firsts['assign_expression']:
         Z(t, col)
-    else:
-        # error
-        pass
 
 
-def B_(t, col):
+def B_(t, col, item, var_table, op_table):
     """执行语句"""
     if t.Token[1] in col.firsts['digit_exe_statement']:
-        C_(t, col)
+        C_(t, col, item, var_table, op_table)
     elif t.Token[1] in col.firsts['control_statement']:
-        F_(t, col)
+        F_(t, col, item, var_table, op_table)
     elif t.Token[1] in col.firsts['complex_statement']:
-        G_(t, col)
-    else:
-        # error
-        pass
+        G_(t, col, item, var_table, op_table)
 
 
-def C_(t, col):
+def C_(t, col, item, var_table, op_table):
     """数据处理语句"""
     if t.Token[1] in col.firsts['assign_statement'] and (t.tokens[t.p][1] != '('):
-        D_(t, col)
+        D_(t, col, item, var_table, op_table)
     elif t.Token[1] in col.firsts['fun_invoke_statement']:
-        E_(t, col)
-    else:
-        # error
-        pass
+        E_(t, col, item, var_table, op_table)
 
 
-def D_(t, col):
+def D_(t, col, item, var_table, op_table):
     """赋值语句"""
-    Z(t, col)
+    Z(t, col, item, var_table, op_table)
     if t.Token[1] == ';':
         match(';', t)
-    else:
-        # error
-        pass
 
 
 def E_(t, col):
@@ -586,9 +560,6 @@ def E_(t, col):
     F(t, col)
     if t.Token[1] == ';':
         match(';', t)
-    else:
-        # error
-        pass
 
 
 def F_(t, col):
@@ -603,38 +574,27 @@ def F_(t, col):
         L_(t, col)
     elif t.Token[1] in col.firsts['return_statement']:
         R_(t, col)
-    else:
-        # error
-        pass
 
 
-def G_(t, col, var_table):
+def G_(t, col, item, var_table, op_table):
     """复合语句"""
     if t.Token[1] == '{':
         match('{', t)
-        H_(t, col, var_table)
+        H_(t, col, item, var_table, op_table)
         if t.Token[1] == '}':
             match('}', t)
-        else:
-            # error
-            pass
-    else:
-        # error
-        pass
 
 
-def H_(t, col, var_table):
+def H_(t, col, item, var_table, op_table):
     """语句表"""
-    I(t, col, var_table)
-    H_1(t, col, var_table)
-    pass
+    I(t, col, item, var_table, op_table)
+    H_1(t, col, item, var_table, op_table)
 
 
-def H_1(t, col, var_table):
+def H_1(t, col, item, var_table, op_table):
     """语句表'"""
     if t.Token[1] in col.firsts['statement_list']:
-        H_(t, col, var_table)
-    pass
+        H_(t, col, item, var_table, op_table)
 
 
 def I_(t, col):
@@ -648,15 +608,6 @@ def I_(t, col):
                 match(')', t)
                 I(t, col)
                 I_1(t, col)
-            else:
-                # error
-                pass
-        else:
-            # error
-            pass
-    else:
-        # error
-        pass
 
 
 def I_1(t, col):
@@ -664,7 +615,6 @@ def I_1(t, col):
     if t.Token[1] == 'else':
         match('else', t)
         I(t, col)
-    pass
 
 
 def J_(t, col):
@@ -683,21 +633,6 @@ def J_(t, col):
                     if t.Token[1] == ')':
                         match(')', t)
                         M_(t, col)
-                    else:
-                        # error
-                        pass
-                else:
-                    # error
-                    pass
-            else:
-                # error
-                pass
-        else:
-            # error
-            pass
-    else:
-        # error
-        pass
 
 
 def K_(t, col):
@@ -710,15 +645,6 @@ def K_(t, col):
             if t.Token[1] == ')':
                 match(')', t)
                 M_(t, col)
-            else:
-                # error
-                pass
-        else:
-            # error
-            pass
-    else:
-        # error
-        pass
 
 
 def L_(t, col):
@@ -735,21 +661,6 @@ def L_(t, col):
                     match(')', t)
                     if t.Token[1] == ';':
                         match(';', t)
-                    else:
-                        # error
-                        pass
-                else:
-                    # error
-                    pass
-            else:
-                # error
-                pass
-        else:
-            # error
-            pass
-    else:
-        # error
-        pass
 
 
 def M_(t, col):
@@ -763,9 +674,6 @@ def M_(t, col):
         P_(t, col)
     elif t.Token[1] in col.firsts['cir_complex_statement']:
         N_(t, col)
-    else:
-        # error
-        pass
 
 
 def N_(t, col):
@@ -775,26 +683,18 @@ def N_(t, col):
         O_(t, col)
         if t.Token[1] == '}':
             match('}', t)
-        else:
-            # error
-            pass
-    else:
-        # error
-        pass
 
 
 def O_(t, col):
     """循环语句表"""
     M_(t, col)
     O_1(t, col)
-    pass
 
 
 def O_1(t, col):
     """循环语句表'"""
     if t.Token[1] in col.firsts['cir_statement_list']:
         O_(t, col)
-    pass
 
 
 def P_(t, col):
@@ -813,9 +713,6 @@ def P_(t, col):
         S_(t, col)
     elif t.Token[1] in col.firsts['continue_statement']:
         T_(t, col)
-    else:
-        # error
-        pass
 
 
 def Q_(t, col):
@@ -828,15 +725,6 @@ def Q_(t, col):
             if t.Token[1] == ')':
                 match(')', t)
                 Q_1(t, col)
-            else:
-                # error
-                pass
-        else:
-            # error
-            pass
-    else:
-        # error
-        pass
 
 
 def Q_1(t, col):
@@ -844,7 +732,6 @@ def Q_1(t, col):
     if t.Token[1] == 'else':
         match('else', t)
         M_(t, col)
-    pass
 
 
 def R_(t, col):
@@ -852,7 +739,6 @@ def R_(t, col):
     if t.Token[1] == 'return':
         match('return', t)
         R_1(t, col)
-    pass
 
 
 def R_1(t, col):
@@ -863,12 +749,7 @@ def R_1(t, col):
         A_(t, col)
         if t.Token[1] == ';':
             match(';', t)
-        else:
-            # error
-            pass
-    else:
-        # error
-        pass
+
 
 
 def S_(t, col):
@@ -877,12 +758,7 @@ def S_(t, col):
         match('break', t)
         if t.Token[1] == ';':
             match(';', t)
-        else:
-            # error
-            pass
-    else:
-        # error
-        pass
+
 
 
 def T_(t, col):
@@ -891,12 +767,7 @@ def T_(t, col):
         match('continue', t)
         if t.Token[1] == ';':
             match(';', t)
-        else:
-            # error
-            pass
-    else:
-        # error
-        pass
+
 
 
 def U_(t, col):
@@ -904,7 +775,7 @@ def U_(t, col):
     A(t, col)
     V_(t, col)
     A(t, col)
-    pass
+
 
 
 def V_(t, col):
@@ -921,9 +792,7 @@ def V_(t, col):
         match('==', t)
     elif t.Token[1] == '!=':
         match('!=', t)
-    else:
-        # error
-        pass
+
 
 
 def W_(t, col):
@@ -937,22 +806,14 @@ def W_(t, col):
             if t.Token[1] == ')':
                 match(')', t)
                 G_(t, col)
-            else:
-                # error
-                pass
-        else:
-            # error
-            pass
-    else:
-        # error
-        pass
+
 
 
 def X_(t, col):
     """函数定义形参列表"""
     if t.Token[1] in col.firsts['fun_define_fpar']:
         Y_(t, col)
-    pass
+
 
 
 def Y_(t, col):
@@ -961,9 +822,6 @@ def Y_(t, col):
     if t.Token[1] == 'signal':
         match('signal', t)
         Y_1(t, col)
-    else:
-        # error
-        pass
 
 
 def Y_1(t, col):
@@ -971,7 +829,6 @@ def Y_1(t, col):
     if t.Token[1] == ',':
         match(',', t)
         Y_(t, col)
-    pass
 
 
 def Z_(t, col):
@@ -985,15 +842,6 @@ def Z_(t, col):
                 match(')', t)
                 G_(t, col)
                 A__(t, col)
-            else:
-                # error
-                pass
-        else:
-            # error
-            pass
-    else:
-        # error
-        pass
 
 
 def A__(t, col):
@@ -1001,4 +849,4 @@ def A__(t, col):
     if t.Token[1] in col.firsts['fun_define']:
         W_(t, col)
         A__(t, col)
-    pass
+

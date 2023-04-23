@@ -805,7 +805,7 @@ def E_(t, col, parent, tree, errors):
     if t.Token[1] == ';':
         match(';', t)
     else:
-        errors.append('出现错误,赋值调用缺少;号,第{t.tokens[t.p - 2][3]}行')
+        errors.append(f'出现错误,赋值调用缺少;号,第{t.tokens[t.p - 2][3]}行')
         print(f'出现错误,赋值调用缺少;号,第{t.tokens[t.p - 2][3]}行')
 
 
