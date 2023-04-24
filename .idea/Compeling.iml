@@ -3,7 +3,7 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$" />
     <content url="file://D:/miniconda3/envs/pytorch/Lib/site-packages" />
-    <orderEntry type="jdk" jdkName="Python 3.9 (pytorch)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.6 (pytorch)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

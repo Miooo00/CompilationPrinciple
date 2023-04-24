@@ -150,9 +150,17 @@ def A(t, col, item, var_table, op_table, node):
     # 算术操作[ , , ,T] 添加四元式
     B(t, col, item, var_table, op_table, node)
     if node:
-        if node[0] and node[1] and node[2] and node[3]:
+        if node[0] and node[1] and node[2] and node[3] and (t.Token[1] not in ['+', '-', '*', '/']):
             op_table.add_node(node[:])
+            temp_obj.last = node[3]
             node[0] = node[1] = node[2] = node[3] = ''
+        elif node[0] and node[1] and node[2] and node[3]:
+            op_table.add_node(node[:])
+            t_var = node[3]
+            node[0] = node[1] = node[3] = ''
+            node[2] = t_var
+            node[3] = temp_obj.newtemp()
+            temp_obj.last = node[3]
     # 若node填满加表
     A1(t, col, item, var_table, op_table, node)
 
@@ -180,12 +188,33 @@ def B1(t, col, item, var_table, op_table, node):
     """ 项' """
     if t.Token[1] == '*':
         # 常量 [*, , con, T]
+        if node[0] and node[1] and node[2] and node[3]:
+            op_table.add_node(node[:])
+            t_var = node[3]
+            node[0] = node[1] = node[2] = node[3] = ''
+            node[2] = t_var
+            node[3] = temp_obj.newtemp()
+        node[0] = '*'
         match('*', t)
         B(t, col, item, var_table, op_table, node)
     elif t.Token[1] == '/':
+        if node[0] and node[1] and node[2] and node[3]:
+            op_table.add_node(node[:])
+            t_var = node[3]
+            node[0] = node[1] = node[2] = node[3] = ''
+            node[2] = t_var
+            node[3] = temp_obj.newtemp()
+        node[0] = '/'
         match('/', t)
         B(t, col, item, var_table, op_table, node)
     elif t.Token[1] == '%':
+        if node[0] and node[1] and node[2] and node[3]:
+            op_table.add_node(node[:])
+            t_var = node[3]
+            node[0] = node[1] = node[2] = node[3] = ''
+            node[2] = t_var
+            node[3] = temp_obj.newtemp()
+        node[0] = '%'
         match('%', t)
         B(t, col, item, var_table, op_table, node)
 
@@ -194,7 +223,13 @@ def C(t, col, item, var_table, op_table, node):
     """因子"""
     if t.Token[1] == '(':
         match('(', t)
-        A(t, col, item, var_table, op_table, node)
+        p = temp_obj.newtemp()
+        if not node[2]:
+            node[2] = p
+        elif not node[1]:
+            node[1] = p
+        node_pass = ['', '', '', p]
+        A(t, col, item, var_table, op_table, node_pass)
         if t.Token[1] == ')':
             match(')', t)
     elif t.Token[1] in col.firsts['con']:
@@ -214,19 +249,21 @@ def D(t, col, item=None, table=None, op_table=None, node=None):
         if item:
             item.val = t.Token[2]
         if node:
-            if not node[2]:
-                node[2] = t.Token[2]
-            elif not node[1]:
+            if not node[1]:
                 node[1] = t.Token[2]
+            elif not node[2]:
+                node[2] = t.Token[2]
+        temp_obj.last = t.Token[2]
         match('num_con', t)
     elif t.Token[1] == 'sig_con':
         if item:
             item.val = t.Token[2]
         if node:
-            if not node[2]:
-                node[2] = t.Token[2]
-            elif not node[1]:
+            if not node[1]:
                 node[1] = t.Token[2]
+            elif not node[2]:
+                node[2] = t.Token[2]
+        temp_obj.last = t.Token[2]
         match('sig_con', t)
 
 
@@ -236,10 +273,11 @@ def E(t, col, item, var_table, op_table, node=None):
         if item:
             item.name = t.Token[2]
         if node:
-            if not node[2]:
-                node[2] = t.Token[2]
-            elif not node[1]:
+            if not node[1]:
                 node[1] = t.Token[2]
+            elif not node[2]:
+                node[2] = t.Token[2]
+        temp_obj.last = t.Token[2]
         match('signal', t)
 
 
@@ -461,10 +499,10 @@ def V1(t, col, item, fun_table):
         V(t, col, item, fun_table)
 
 
-def W(t, col):
+def W(t, col, item, var_table, op_table, node):
     """布尔表达式"""
-    X(t, col)
-    W1(t, col)
+    X(t, col, item, var_table, op_table, node)
+    W1(t, col, item, var_table, op_table, node)
 
 
 def W1(t, col):
@@ -474,10 +512,10 @@ def W1(t, col):
         W(t, col)
 
 
-def X(t, col):
+def X(t, col, item, var_table, op_table, node):
     """布尔项"""
-    Y(t, col)
-    X1(t, col)
+    Y(t, col, item, var_table, op_table, node)
+    X1(t, col, item, var_table, op_table, node)
 
 
 def X1(t, col):
@@ -487,16 +525,15 @@ def X1(t, col):
         X(t, col)
 
 
-def Y(t, col):
+def Y(t, col, item, var_table, op_table, node):
     """布尔因子"""
-    # 同样存在相同firsts集合优先情况考虑
     if t.Token[1] in col.firsts['arg_exp'] and conditon(t):
-        A(t, col)
+        A(t, col, item, var_table, op_table, node)
     elif t.Token[1] in col.firsts['rel_expression']:
-        U_(t, col)
+        U_(t, col, item, var_table, op_table, node)
     elif t.Token[1] == '!':
         match('!', t)
-        W1(t, col)
+        W1(t, col, item, var_table, op_table, node)
 
 
 def Z(t, col, item, var_table, op_table):
@@ -508,12 +545,12 @@ def Z(t, col, item, var_table, op_table):
             match('=', t)
             temp = temp_obj.newtemp()
             # node = Node(op='=', b=temp, c=obj)
-            node = ['=', '', temp, obj]
-            op_table.add_node(node[:])
             # 赋值操作[=, ,T,signal] 需要A_返回值 , 传T的值
             # n = Node(c=temp)
             node = ['', '', '', temp]
             A_(t, col, item, var_table, op_table, node)
+            node = ['=', '', temp_obj.last, obj]
+            op_table.add_node(node[:])
             # 添加四元式
 
 
@@ -523,9 +560,9 @@ def A_(t, col, item, var_table, op_table, node=None):
         # 赋值操作[=, ,T ,signal] 添加四元式
         A(t, col, item, var_table, op_table, node)
     elif t.Token[1] in col.firsts['rel_expression'] and (t.tokens[t.p][1] != '=' and conditon1(t)):
-        U_(t, col)
+        U_(t, col, item, var_table, op_table, node)
     elif t.Token[1] in col.firsts['bool_expression'] and (t.tokens[t.p][1] != '='):
-        W(t, col)
+        W(t, col, item, var_table, op_table, node)
     elif t.Token[1] in col.firsts['assign_expression']:
         Z(t, col)
 
@@ -562,10 +599,10 @@ def E_(t, col):
         match(';', t)
 
 
-def F_(t, col):
+def F_(t, col, item, var_table, op_table):
     """控制语句"""
     if t.Token[1] in col.firsts['if_statement']:
-        I_(t, col)
+        I_(t, col, item, var_table, op_table)
     elif t.Token[1] in col.firsts['for_statement']:
         J_(t, col)
     elif t.Token[1] in col.firsts['while_statement']:
@@ -597,24 +634,28 @@ def H_1(t, col, item, var_table, op_table):
         H_(t, col, item, var_table, op_table)
 
 
-def I_(t, col):
+def I_(t, col, item, var_table, op_table):
     """if语句"""
     if t.Token[1] == 'if':
         match('if', t)
         if t.Token[1] == '(':
             match('(', t)
-            A_(t, col)
+            node = ['', '', '', 0]
+            A_(t, col, item, var_table, op_table, node)
+            # 假出口未知
+            op_table.add_node(['j', '', '', 0])
             if t.Token[1] == ')':
                 match(')', t)
-                I(t, col)
-                I_1(t, col)
+                I(t, col, item, var_table, op_table)
+                # 回填假出口
+                I_1(t, col, item, var_table, op_table)
 
 
-def I_1(t, col):
+def I_1(t, col, item, var_table, op_table):
     """if语句'"""
     if t.Token[1] == 'else':
         match('else', t)
-        I(t, col)
+        I(t, col, item, var_table, op_table)
 
 
 def J_(t, col):
@@ -770,27 +811,34 @@ def T_(t, col):
 
 
 
-def U_(t, col):
+def U_(t, col, item, var_table, op_table, node):
     """关系表达式"""
-    A(t, col)
-    V_(t, col)
-    A(t, col)
+    A(t, col, item, var_table, op_table, node)
+    V_(t, col, item, var_table, op_table, node)
+    A(t, col, item, var_table, op_table, node)
+    op_table.add_node(node[:])
 
 
 
-def V_(t, col):
+def V_(t, col, item, var_table, op_table, node):
     """关系运算符"""
     if t.Token[1] == '>':
+        node[0] = '>'
         match('>', t)
     elif t.Token[1] == '<':
+        node[0] = '<'
         match('<', t)
     elif t.Token[1] == '>=':
+        node[0] = '>='
         match('>=', t)
     elif t.Token[1] == '<=':
+        node[0] = '<='
         match('<=', t)
     elif t.Token[1] == '==':
+        node[0] = '=='
         match('==', t)
     elif t.Token[1] == '!=':
+        node[0] = '!='
         match('!=', t)
 
 

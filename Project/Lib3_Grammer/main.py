@@ -106,10 +106,11 @@ def entry(content, regulation, start='program'):
 
                 sub1 = Node('fun_declare')
                 tree.add_node(sub1, root)
+                tree.add_node(Node(name), sub1)
                 t = Node('fun_type')
                 tree.add_node(t, sub1)
                 tree.add_node(Node(typ), t)
-                tree.add_node(Node(name), sub1)
+
 
                 # tree
                 S(tokenbox, col, sub1, tree, errors)

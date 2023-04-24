@@ -81,7 +81,6 @@ class Gui:
             return
 
 
-
 QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
 app = QApplication(sys.argv)
 a = Gui()

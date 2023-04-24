@@ -73,6 +73,7 @@ class Temp:
     def __init__(self):
         self.count = 1
         self.table = {}
+        self.last = ''
 
     def newtemp(self, val=0):
         temp = f'T{self.count}'
@@ -86,15 +87,27 @@ class OPCODE:
         self.list = []
 
     def add_node(self, node):
-        # item = [node.op, node.obja, node.objb, node.res]
-        # self.list.append(item)
         self.list.append(node)
+
     def show(self):
+        index = 1
         for item in self.list:
-            print(item)
+            line = str(index)+':'+'\t' + '('
+            for i in item:
+                line += str(i) + ',' + '\t'
+            line = line +')'
+            print(line)
+            index += 1
 
 
+class ENTRY:
+    def __init__(self):
+        self.realChain = []
+        self.fakeChain = []
 
+    def merge(self, exit):
+        for item in self.realChain:
+            item[3] = exit
 
 
 
