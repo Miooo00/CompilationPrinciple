@@ -68,7 +68,7 @@ def conditon1(t):
     p = t.p
     simbol = ['&&', '||', '!']
     wrong = t.tokens[p][3]
-    while (p < len(t.tokens) and t.tokens[p][1] != ')') and (p < len(t.tokens) and t.tokens[p][1] != ';'):
+    while (p < len(t.tokens) and t.tokens[p][1] != ';'):
         if wrong != t.tokens[p][3]:
             break
         if t.tokens[p][1] in simbol:

@@ -1,10 +1,11 @@
 import copy
 
-from Project.Lib4_Semantic_Analyse.Tables import ConstItem, VarItem, Node, Temp
+from Project.Lib4_Semantic_Analyse.Tables import ConstItem, VarItem, Node, Temp, ENTRY
 
 
 
 temp_obj = Temp()
+bool_lastmark = ['']
 
 class TokenBox:
     def __init__(self, tokens):
@@ -70,7 +71,7 @@ def conditon1(t):
     p = t.p
     simbol = ['&&', '||', '!']
     wrong = t.tokens[p][3]
-    while (p < len(t.tokens) and t.tokens[p][1] != ')') and (p < len(t.tokens) and t.tokens[p][1] != ';'):
+    while (p < len(t.tokens) and t.tokens[p][1] != ';'):
         if wrong != t.tokens[p][3]:
             break
         if t.tokens[p][1] in simbol:
@@ -223,12 +224,15 @@ def C(t, col, item, var_table, op_table, node):
     """因子"""
     if t.Token[1] == '(':
         match('(', t)
-        p = temp_obj.newtemp()
-        if not node[2]:
-            node[2] = p
-        elif not node[1]:
-            node[1] = p
-        node_pass = ['', '', '', p]
+        if node[3] != 0:
+            p = temp_obj.newtemp()
+            if not node[2]:
+                node[2] = p
+            elif not node[1]:
+                node[1] = p
+            node_pass = ['', '', '', p]
+        else:
+            node_pass = node
         A(t, col, item, var_table, op_table, node_pass)
         if t.Token[1] == ')':
             match(')', t)
@@ -499,33 +503,103 @@ def V1(t, col, item, fun_table):
         V(t, col, item, fun_table)
 
 
-def W(t, col, item, var_table, op_table, node):
+def W(t, col, item, var_table, op_table, node, chain):
     """布尔表达式"""
-    X(t, col, item, var_table, op_table, node)
-    W1(t, col, item, var_table, op_table, node)
+    X(t, col, item, var_table, op_table, node, chain)
+    W1(t, col, item, var_table, op_table, node, chain)
 
 
-def W1(t, col):
+def W1(t, col, item, var_table, op_table, node, chain):
     """布尔表达式'"""
     if t.Token[1] == '||':
+        if bool_lastmark[0] == '||':
+            if node[0] and (node[1] or node[2]):
+                flag = 0
+                for i in chain.realChain:
+                    if i >= op_table.length:
+                        flag = 1
+                if chain and flag == 0:
+                    chain.merge_real(op_table, op_table.length + 1)
+                    chain.realChain.append(op_table.length)
+                op_table.add_node(node[:])
+                op_table.add_node(['j', '', '', 0])
+                if chain:
+                    chain.fakeChain.append(op_table.length - 1)
+                node[1] = node[2] = ''
+        else:
+            node[0] = 'jnz'
+            if node[0] and (node[1] or node[2]):
+                flag = 0
+                for i in chain.realChain:
+                    if i >= op_table.length:
+                        flag = 1
+                if chain and flag == 0:
+                    chain.merge_real(op_table, op_table.length + 1, True)
+                    chain.realChain.append(op_table.length)
+                op_table.add_node(node[:])
+                op_table.add_node(['j', '', '', 0])
+                if chain:
+                    chain.fakeChain.append(op_table.length - 1)
+                node[1] = node[2] = ''
+        bool_lastmark[0] = '||'
         match('||', t)
-        W(t, col)
+        W(t, col, item, var_table, op_table, node, chain)
+        if node[0] == 'jnz' and (node[1] or node[2]):
+            chain.merge_real(op_table, op_table.length+1)
+            chain.realChain.append(op_table.length)
+            op_table.add_node(node[:])
+            node[1] = node[2] = ''
 
 
-def X(t, col, item, var_table, op_table, node):
+def X(t, col, item, var_table, op_table, node, chain):
     """布尔项"""
-    Y(t, col, item, var_table, op_table, node)
-    X1(t, col, item, var_table, op_table, node)
+    Y(t, col, item, var_table, op_table, node, chain)
+    X1(t, col, item, var_table, op_table, node, chain)
 
 
-def X1(t, col):
+def X1(t, col, item, var_table, op_table, node, chain):
     """布尔项'"""
     if t.Token[1] == '&&':
+        if bool_lastmark[0] == '||':
+            if node[0] and (node[1] or node[2]):
+                flag = 0
+                for i in chain.realChain:
+                    if i >= op_table.length:
+                        flag = 1
+                if chain and flag == 0:
+                    chain.merge_real(op_table, op_table.length + 1)
+                    chain.realChain.append(op_table.length)
+                op_table.add_node(node[:])
+                op_table.add_node(['j', '', '', 0])
+                if chain:
+                    chain.fakeChain.append(op_table.length - 1)
+                node[1] = node[2] = ''
+        else:
+            node[0] = 'jnz'
+            if node[0] and (node[1] or node[2]):
+                flag = 0
+                for i in chain.realChain:
+                    if i >= op_table.length:
+                        flag = 1
+                if chain and flag == 0:
+                    chain.merge_real(op_table, op_table.length+1, True)
+                    chain.realChain.append(op_table.length)
+                op_table.add_node(node[:])
+                op_table.add_node(['j', '', '', 0])
+                if chain:
+                    chain.fakeChain.append(op_table.length-1)
+                node[1] = node[2] = ''
+        bool_lastmark[0] = '&&'
         match('&&', t)
-        X(t, col)
+        X(t, col, item, var_table, op_table, node, chain)
+        if node[0] == 'jnz' and (node[1] or node[2]):
+            chain.merge_real(op_table, op_table.length+1, True)
+            chain.realChain.append(op_table.length)
+            op_table.add_node(node[:])
+            node[1] = node[2] = ''
 
 
-def Y(t, col, item, var_table, op_table, node):
+def Y(t, col, item, var_table, op_table, node, chain):
     """布尔因子"""
     if t.Token[1] in col.firsts['arg_exp'] and conditon(t):
         A(t, col, item, var_table, op_table, node)
@@ -554,7 +628,7 @@ def Z(t, col, item, var_table, op_table):
             # 添加四元式
 
 
-def A_(t, col, item, var_table, op_table, node=None):
+def A_(t, col, item, var_table, op_table, node=None, chain=None):
     """表达式"""
     if t.Token[1] in col.firsts['arg_exp'] and conditon(t) and conditon1(t) and (t.tokens[t.p][1] != '='):
         # 赋值操作[=, ,T ,signal] 添加四元式
@@ -562,7 +636,7 @@ def A_(t, col, item, var_table, op_table, node=None):
     elif t.Token[1] in col.firsts['rel_expression'] and (t.tokens[t.p][1] != '=' and conditon1(t)):
         U_(t, col, item, var_table, op_table, node)
     elif t.Token[1] in col.firsts['bool_expression'] and (t.tokens[t.p][1] != '='):
-        W(t, col, item, var_table, op_table, node)
+        W(t, col, item, var_table, op_table, node, chain)
     elif t.Token[1] in col.firsts['assign_expression']:
         Z(t, col)
 
@@ -636,20 +710,26 @@ def H_1(t, col, item, var_table, op_table):
 
 def I_(t, col, item, var_table, op_table):
     """if语句"""
+    chain = ENTRY()
     if t.Token[1] == 'if':
         match('if', t)
         if t.Token[1] == '(':
             match('(', t)
             node = ['', '', '', 0]
-            A_(t, col, item, var_table, op_table, node)
+            chain.realChain.append(op_table.length)
+            A_(t, col, item, var_table, op_table, node, chain)
+
             # 假出口未知
-            op_table.add_node(['j', '', '', 0])
+            f_node = ['j', '', '', 0]
+            op_table.add_node(f_node)
+            chain.fakeChain.append(op_table.length-1)
             if t.Token[1] == ')':
                 match(')', t)
+                chain.merge_real(op_table, op_table.length+1)
                 I(t, col, item, var_table, op_table)
                 # 回填假出口
+                chain.merge_fake(op_table, op_table.length+1)
                 I_1(t, col, item, var_table, op_table)
-
 
 def I_1(t, col, item, var_table, op_table):
     """if语句'"""

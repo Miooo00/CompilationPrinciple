@@ -85,9 +85,11 @@ class Temp:
 class OPCODE:
     def __init__(self):
         self.list = []
+        self.length = 0
 
     def add_node(self, node):
         self.list.append(node)
+        self.length = len(self.list)
 
     def show(self):
         index = 1
@@ -105,11 +107,24 @@ class ENTRY:
         self.realChain = []
         self.fakeChain = []
 
-    def merge(self, exit):
-        for item in self.realChain:
-            item[3] = exit
+    def merge_real(self, op_table, exit, reset=False):
+        table = op_table.list
+        print(len(table), self.realChain)
+        for i in self.realChain:
+            table[i][3] = exit
+            if reset:
+                self.realChain = []
 
+    def merge_fake(self, op_table, exit, reset=False):
+        table = op_table.list
+        for i in self.fakeChain:
+            table[i][3] = exit
+            if reset:
+                self.fakeChain = []
 
-
-
+    def reset(self, r_chain=False, f_chain=False):
+        if r_chain:
+            self.realChain = []
+        if f_chain:
+            self.fakeChain = []
 
