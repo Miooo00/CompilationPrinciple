@@ -672,7 +672,7 @@ def F_(t, col, item, var_table, op_table):
     elif t.Token[1] in col.firsts['for_statement']:
         J_(t, col)
     elif t.Token[1] in col.firsts['while_statement']:
-        K_(t, col)
+        K_(t, col, item, var_table, op_table)
     elif t.Token[1] in col.firsts['do_while_statement']:
         L_(t, col)
     elif t.Token[1] in col.firsts['return_statement']:
@@ -767,20 +767,35 @@ def J_(t, col):
                         M_(t, col)
 
 
-def K_(t, col):
+def K_(t, col, item, var_table, op_table):
     """while语句"""
+    chain = ENTRY()
+    entry = [0]
     if t.Token[1] == 'while':
         match('while', t)
         if t.Token[1] == '(':
             match('(', t)
-            A_(t, col)
+            node = ['', '', '', 0]
+            entry[0] = op_table.length+1
+            chain.realChain.append(op_table.length)
+            A_(t, col, item, var_table, op_table, node, chain)
+
+            f_node = ['j', '', '', 0]
+            op_table.add_node(f_node)
+            chain.fakeChain.append(op_table.length - 1)
             if t.Token[1] == ')':
                 match(')', t)
-                M_(t, col)
+                chain.merge_real(op_table, op_table.length+1)
+                M_(t, col, item, var_table, op_table)
+                chain.merge_fake(op_table, op_table.length+2)
+                op_table.add_node(['j', '', '', entry[0]])
+                entry[0] = 0
 
 
 def L_(t, col):
     """dowhile语句"""
+    chain = ENTRY()
+    entry = [0]
     if t.Token[1] == 'do':
         match('do', t)
         N_(t, col)
@@ -795,15 +810,15 @@ def L_(t, col):
                         match(';', t)
 
 
-def M_(t, col):
+def M_(t, col, item, var_table, op_table):
     """循环语句"""
     # 书上给的词法在循环语句中没有执行语句,在循环内的执行语句如赋值无法正确识别 ----
     if t.Token[1] in col.firsts['exe_statement']:
-        B_(t, col)
+        B_(t, col, item, var_table, op_table)
     elif t.Token[1] in col.firsts['declare_statement']:
         J(t, col)
     elif t.Token[1] in col.firsts['cir_exe_statement']:
-        P_(t, col)
+        P_(t, col, item, var_table, op_table)
     elif t.Token[1] in col.firsts['cir_complex_statement']:
         N_(t, col)
 
