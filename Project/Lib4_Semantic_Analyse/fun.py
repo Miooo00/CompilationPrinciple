@@ -544,11 +544,7 @@ def W1(t, col, item, var_table, op_table, node, chain):
         bool_lastmark[0] = '||'
         match('||', t)
         W(t, col, item, var_table, op_table, node, chain)
-        if node[0] == 'jnz' and (node[1] or node[2]):
-            chain.merge_real(op_table, op_table.length+1)
-            chain.realChain.append(op_table.length)
-            op_table.add_node(node[:])
-            node[1] = node[2] = ''
+
 
 
 def X(t, col, item, var_table, op_table, node, chain):
@@ -592,11 +588,7 @@ def X1(t, col, item, var_table, op_table, node, chain):
         bool_lastmark[0] = '&&'
         match('&&', t)
         X(t, col, item, var_table, op_table, node, chain)
-        if node[0] == 'jnz' and (node[1] or node[2]):
-            chain.merge_real(op_table, op_table.length+1, True)
-            chain.realChain.append(op_table.length)
-            op_table.add_node(node[:])
-            node[1] = node[2] = ''
+
 
 
 def Y(t, col, item, var_table, op_table, node, chain):
@@ -719,6 +711,16 @@ def I_(t, col, item, var_table, op_table):
             chain.realChain.append(op_table.length)
             A_(t, col, item, var_table, op_table, node, chain)
 
+            if node[0] == 'jnz' and (node[1] or node[2]):
+                if bool_lastmark[0] == '||':
+                    bool_reset = False
+                else:
+                    bool_reset = True
+                chain.merge_real(op_table, op_table.length + 1, bool_reset)
+                chain.realChain.append(op_table.length)
+                op_table.add_node(node[:])
+                node[1] = node[2] = ''
+
             # 假出口未知
             f_node = ['j', '', '', 0]
             op_table.add_node(f_node)
@@ -727,9 +729,18 @@ def I_(t, col, item, var_table, op_table):
                 match(')', t)
                 chain.merge_real(op_table, op_table.length+1)
                 I(t, col, item, var_table, op_table)
+
+
                 # 回填假出口
-                chain.merge_fake(op_table, op_table.length+1)
+                chain.merge_fake(op_table, op_table.length+2)
+                chain.reset(f_chain=True)
+                op_table.add_node(['j', '', '', 0])
+                chain.fakeChain.append(op_table.length - 1)
+
+
                 I_1(t, col, item, var_table, op_table)
+                chain.merge_fake(op_table, op_table.length+1)
+
 
 def I_1(t, col, item, var_table, op_table):
     """if语句'"""
