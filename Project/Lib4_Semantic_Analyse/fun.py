@@ -6,6 +6,7 @@ from Project.Lib4_Semantic_Analyse.Tables import ConstItem, VarItem, Node, Temp,
 
 temp_obj = Temp()
 bool_lastmark = ['']
+entry_offset = [0]
 
 class TokenBox:
     def __init__(self, tokens):
@@ -630,7 +631,7 @@ def A_(t, col, item, var_table, op_table, node=None, chain=None):
     elif t.Token[1] in col.firsts['bool_expression'] and (t.tokens[t.p][1] != '='):
         W(t, col, item, var_table, op_table, node, chain)
     elif t.Token[1] in col.firsts['assign_expression']:
-        Z(t, col)
+        Z(t, col, item, var_table, op_table)
 
 
 def B_(t, col, item, var_table, op_table):
@@ -670,11 +671,11 @@ def F_(t, col, item, var_table, op_table):
     if t.Token[1] in col.firsts['if_statement']:
         I_(t, col, item, var_table, op_table)
     elif t.Token[1] in col.firsts['for_statement']:
-        J_(t, col)
+        J_(t, col, item, var_table, op_table)
     elif t.Token[1] in col.firsts['while_statement']:
         K_(t, col, item, var_table, op_table)
     elif t.Token[1] in col.firsts['do_while_statement']:
-        L_(t, col)
+        L_(t, col, item, var_table, op_table)
     elif t.Token[1] in col.firsts['return_statement']:
         R_(t, col)
 
@@ -710,6 +711,11 @@ def I_(t, col, item, var_table, op_table):
             node = ['', '', '', 0]
             chain.realChain.append(op_table.length)
             A_(t, col, item, var_table, op_table, node, chain)
+            if entry_offset[0] != 0:
+                chain.realChain[-1] = entry_offset[0]
+                print(entry_offset[0])
+                entry_offset[0] = 0
+
 
             if node[0] == 'jnz' and (node[1] or node[2]):
                 if bool_lastmark[0] == '||':
@@ -749,22 +755,38 @@ def I_1(t, col, item, var_table, op_table):
         I(t, col, item, var_table, op_table)
 
 
-def J_(t, col):
+def J_(t, col, item, var_table, op_table):
     """for语句"""
+    chain = ENTRY()
+    entry = [0, 0]
     if t.Token[1] == 'for':
         match('for', t)
         if t.Token[1] == '(':
             match('(', t)
-            A_(t, col)
+            node = ['', '', '', '']
+            A_(t, col, item, var_table, op_table, node, chain)
             if t.Token[1] == ';':
                 match(';', t)
-                A_(t, col)
+                node = ['', '', '', 0]
+                chain.realChain.append(op_table.length)
+                A_(t, col, item, var_table, op_table, node, chain)
+                f_node = ['j', '', '', 0]
+                op_table.add_node(f_node)
+                chain.fakeChain.append(op_table.length - 1)
                 if t.Token[1] == ';':
                     match(';', t)
-                    A_(t, col)
+                    node = ['', '', '', '']
+                    entry[0] = op_table.length-1
+                    A_(t, col, item, var_table, op_table, node, chain)
+                    entry[1] = op_table.length-1
+                    op_table.add_node(['j', '', '', entry[0]])
+
                     if t.Token[1] == ')':
                         match(')', t)
-                        M_(t, col)
+                        chain.merge_real(op_table, op_table.length+1)
+                        M_(t, col, item, var_table, op_table)
+                        op_table.add_node(['j', '', '', entry[1]])
+                        chain.merge_fake(op_table, op_table.length+1)
 
 
 def K_(t, col, item, var_table, op_table):
@@ -792,18 +814,27 @@ def K_(t, col, item, var_table, op_table):
                 entry[0] = 0
 
 
-def L_(t, col):
+def L_(t, col, item, var_table, op_table):
     """dowhile语句"""
     chain = ENTRY()
     entry = [0]
     if t.Token[1] == 'do':
         match('do', t)
-        N_(t, col)
+        entry[0] = op_table.length + 1
+        N_(t, col, item, var_table, op_table)
         if t.Token[1] == 'while':
             match('while', t)
             if t.Token[1] == '(':
                 match('(', t)
-                A_(t, col)
+                node = ['', '', '', 0]
+                chain.realChain.append(op_table.length)
+                A_(t, col, item, var_table, op_table, node, chain)
+                chain.merge_real(op_table, entry[0])
+                entry[0] = 0
+
+                # f_node = ['j', '', '', op_table.length+2]
+                # op_table.add_node(f_node)
+                # chain.fakeChain.append(op_table.length - 1)
                 if t.Token[1] == ')':
                     match(')', t)
                     if t.Token[1] == ';':
@@ -823,25 +854,25 @@ def M_(t, col, item, var_table, op_table):
         N_(t, col)
 
 
-def N_(t, col):
+def N_(t, col, item, var_table, op_table):
     """循环用复合语句"""
     if t.Token[1] == '{':
         match('{', t)
-        O_(t, col)
+        O_(t, col, item, var_table, op_table)
         if t.Token[1] == '}':
             match('}', t)
 
 
-def O_(t, col):
+def O_(t, col, item, var_table, op_table):
     """循环语句表"""
-    M_(t, col)
-    O_1(t, col)
+    M_(t, col, item, var_table, op_table)
+    O_1(t, col, item, var_table, op_table)
 
 
-def O_1(t, col):
+def O_1(t, col, item, var_table, op_table):
     """循环语句表'"""
     if t.Token[1] in col.firsts['cir_statement_list']:
-        O_(t, col)
+        O_(t, col, item, var_table, op_table)
 
 
 def P_(t, col):
@@ -919,10 +950,43 @@ def T_(t, col):
 
 def U_(t, col, item, var_table, op_table, node):
     """关系表达式"""
+
     A(t, col, item, var_table, op_table, node)
+    if node[0] and node[1] and node[2] and node[3]:
+        n_t = node[3]
+        op_table.add_node(node[:])
+        node = ['', n_t, '', 0]
     V_(t, col, item, var_table, op_table, node)
+    only_const = ''
+    const_index = 0
+    arg_or_con = []
+    if not node[1]:
+        temp = temp_obj.newtemp()
+        node[1] = temp
+        const_index = 1
+        arg_or_con = node[:]
+        node = ['', '', '', temp]
+
+    elif not node[2]:
+        temp = temp_obj.newtemp()
+        node[2] = temp
+        const_index = 2
+        arg_or_con = node[:]
+        node = ['', '', '', temp]
     A(t, col, item, var_table, op_table, node)
-    op_table.add_node(node[:])
+    if not node[1] and not node[2]:
+        op_table.add_node(arg_or_con[:])
+        entry_offset[0] = op_table.length-1
+    elif (not node[1]) or (not node[2]):
+        if node[1]:
+            only_const = node[1]
+        elif node[2]:
+            only_const = node[2]
+        arg_or_con[const_index] = only_const
+        op_table.add_node(arg_or_con[:])
+    else:
+        op_table.add_node(arg_or_con[:])
+        entry_offset[0] = op_table.length-1
 
 
 

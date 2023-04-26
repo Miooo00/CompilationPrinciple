@@ -112,15 +112,15 @@ class ENTRY:
         print(len(table), self.realChain)
         for i in self.realChain:
             table[i][3] = exit
-            if reset:
-                self.realChain = []
+        if reset:
+            self.realChain = []
 
     def merge_fake(self, op_table, exit, reset=False):
         table = op_table.list
         for i in self.fakeChain:
             table[i][3] = exit
-            if reset:
-                self.fakeChain = []
+        if reset:
+            self.fakeChain = []
 
     def reset(self, r_chain=False, f_chain=False):
         if r_chain:
