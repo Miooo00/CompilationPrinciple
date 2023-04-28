@@ -42,31 +42,69 @@ class ConstItem:
         print(self.entry, self.name, self.type, self.val)
 
 
+
 class Table:
-    def __init__(self):
-        self.t = []
+    def __init__(self, flag):
+        self.table = []
         self.entry = 1
+        self.flag = flag
 
     def add_obj(self, obj):
         obj.entry = self.entry
         self.entry += 1
-        self.t.append(obj)
+        self.table.append(obj)
 
+    def get_val(self, name):
+        if self.flag == 'C':
+            for item in self.table:
+                if item.name == name:
+                    return item.val
+        elif self.flag == 'V':
+            for item in self.table:
+                if item.name == name:
+                    return item.val
+        return 114514
 
-class Node:
-    def __init__(self, op='', a='', b='', c=''):
-        self.op = op
-        self.obja = a
-        self.objb = b
-        self.res = c
-
-    def ready2add(self):
-        if self.op and self.obja and self.objb and self.res:
+    def search(self, name):
+        if self.flag == 'C':
+            for item in self.table:
+                if item.name == name:
+                    return False
             return True
-        return False
+        elif self.flag == 'V':
+            for item in self.table:
+                if item.name == name:
+                    return False
+            return True
+        elif self.flag == 'F':
+            for item in self.table:
+                if item.name == name:
+                    return False
+            return True
 
-    def reset(self):
-        self.op = self.obja = self.objb = self.res = ''
+    def update(self, name, val):
+        if self.flag == 'C':
+            for item in self.table:
+                if item.name == name:
+                    item.val = val
+                    return
+        elif self.flag == 'V':
+            for item in self.table:
+                if item.name == name:
+                    item.val = val
+                    return
+        elif self.flag == 'F':
+            for item in self.table:
+                if item.name == name:
+                    item.val = val
+                    return
+
+    def pop(self):
+        self.table.pop()
+
+
+
+
 
 
 class Temp:
@@ -109,7 +147,7 @@ class ENTRY:
 
     def merge_real(self, op_table, exit, reset=False):
         table = op_table.list
-        print(len(table), self.realChain)
+        # print(len(table), self.realChain)
         for i in self.realChain:
             table[i][3] = exit
         if reset:

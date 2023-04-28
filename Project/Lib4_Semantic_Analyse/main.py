@@ -6,9 +6,9 @@ from Project.Lib4_Semantic_Analyse.Tables import *
 
 def entry(token_file, regulation, start='program'):
     tokens = []
-    const_table = Table()
-    var_table = Table()
-    fun_table = Table()
+    const_table = Table('C')
+    var_table = Table('V')
+    fun_table = Table('F')
     op_table = OPCODE()
     with open(token_file, 'r', encoding='utf-8') as fp:
         content = fp.readlines()
@@ -38,9 +38,12 @@ def entry(token_file, regulation, start='program'):
             if tokenbox.Token[1] == '(':
                 # 修改了文法的递归下降函数 解决了检测入口不对称
                 f_i = FunctionItem()
-                f_i.name = t
-                f_i.type = tpy
-                fun_table.add_obj(f_i)
+                if fun_table.search(t):
+                    f_i.name = t
+                    f_i.type = tpy
+                    fun_table.add_obj(f_i)
+                else:
+                    print(f'函数重复声明错误,第{tokenbox.Token[3]}行')
                 S(tokenbox, col, f_i, fun_table)
                 # 函数声明
             elif tokenbox.Token[1] == '=' or tokenbox.Token[1] == ',':
@@ -53,18 +56,18 @@ def entry(token_file, regulation, start='program'):
     tokenbox.get_next_token()
     # 处理复合语句
     tokenbox.get_next_token()
-    G_(tokenbox, col, None, var_table, op_table)
+    G_(tokenbox, col, None, var_table, const_table, op_table)
     while tokenbox.Token[1] in ['int', 'char', 'float', 'void']:
         W_(tokenbox, col)
 
     print('CONST TABLE:')
-    for i in const_table.t:
+    for i in const_table.table:
         i.items_print()
     print('VAR TABLE:')
-    for i in var_table.t:
+    for i in var_table.table:
         i.items_print()
     print('FUN TABLE:')
-    for i in fun_table.t:
+    for i in fun_table.table:
         i.items_print()
 
     op_table.show()

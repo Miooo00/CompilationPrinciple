@@ -1,12 +1,14 @@
 import copy
 
-from Project.Lib4_Semantic_Analyse.Tables import ConstItem, VarItem, Node, Temp, ENTRY
+from Project.Lib4_Semantic_Analyse.Tables import ConstItem, VarItem, Temp, ENTRY
 
 
 
 temp_obj = Temp()
 bool_lastmark = ['']
 entry_offset = [0]
+
+
 
 class TokenBox:
     def __init__(self, tokens):
@@ -45,6 +47,7 @@ class TokenBox:
             else:
                 tok.insert(1, tok[1])
 
+
 def match(obj, t):
     if t.Token[1] == obj:
         t.get_next_token()
@@ -58,7 +61,7 @@ def conditon(t):
     p = t.p
     simbol = ['>', '<', '>=', '<=', '==', '!=']
     wrong = t.tokens[p][3]
-    while p < len(t.tokens) and t.tokens[p][1] != ')' and t.tokens[p][1] != ';':
+    while p < len(t.tokens) and t.tokens[p][1] != ';':
         if wrong != t.tokens[p][3]:
             break
         if t.tokens[p][1] in simbol:
@@ -150,13 +153,134 @@ A__ 函数块
 def A(t, col, item, var_table, op_table, node):
     """算术表达式"""
     # 算术操作[ , , ,T] 添加四元式
-    B(t, col, item, var_table, op_table, node)
+    next_node = node
+    if node:
+        if (node[0] in ['+', '-']) and (t.tokens[t.p][2] in ['*', '/']):
+            temp = temp_obj.newtemp()
+            if not node[1]:
+                node[1] = temp
+            elif not node[2]:
+                node[2] = temp
+            next_node = ['', '', '', temp]
+    B(t, col, item, var_table, op_table, next_node)
     if node:
         if node[0] and node[1] and node[2] and node[3] and (t.Token[1] not in ['+', '-', '*', '/']):
+            if not node[1].isdigit():
+                if var_table.search(node[1]):
+                    print(f'变量或常量未声明,第{t.Token[3]}行')
+                else:
+                    pass
+            if not node[2].isdigit():
+                if var_table.search(node[2]):
+                    print(f'变量或常量未声明,第{t.Token[3]}行')
+                else:
+                    pass
+            # if var_table.search(node[3]):
+            #     var_temp = VarItem()
+            #     var_temp.name = node[3]
+            #     var_temp.type = 'None'
+            #     if node[0] == '+':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = val_1 + val_2
+            #         var_temp.val = val
+            #         var_table.add_obj(var_temp)
+            #     elif node[0] == '-':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = val_1 - val_2
+            #         var_temp.val = val
+            #         var_table.add_obj(var_temp)
+            #     elif node[0] == '*':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = val_1 * val_2
+            #         var_temp.val = val
+            #         var_table.add_obj(var_temp)
+            #     elif node[0] == '/':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = val_1 / val_2
+            #         var_temp.val = val
+            #         var_table.add_obj(var_temp)
+            # else:
+            #     pass
             op_table.add_node(node[:])
             temp_obj.last = node[3]
             node[0] = node[1] = node[2] = node[3] = ''
         elif node[0] and node[1] and node[2] and node[3]:
+            if not node[1].isdigit():
+                if var_table.search(node[1]):
+                    print(f'变量或常量未声明,第{t.Token[3]}行')
+                else:
+                    pass
+            if not node[2].isdigit():
+                if var_table.search(node[2]):
+                    print(f'变量或常量未声明,第{t.Token[3]}行')
+                else:
+                    pass
+            # if var_table.search(node[3]):
+            #     var_temp = VarItem()
+            #     var_temp.name = node[3]
+            #     var_temp.type = 'None'
+            #     if node[0] == '+':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = val_1 + val_2
+            #         var_temp.val = val
+            #         var_table.add_obj(var_temp)
+            #     elif node[0] == '-':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = val_1 - val_2
+            #         var_temp.val = val
+            #         var_table.add_obj(var_temp)
+            #     elif node[0] == '*':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = val_1 * val_2
+            #         var_temp.val = val
+            #         var_table.add_obj(var_temp)
+            #     elif node[0] == '/':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = val_1 / val_2
+            #         var_temp.val = val
+            #         var_table.add_obj(var_temp)
+            # else:
+            #     pass
             op_table.add_node(node[:])
             t_var = node[3]
             node[0] = node[1] = node[3] = ''
@@ -184,6 +308,130 @@ def B(t, col, item, var_table, op_table, node):
     """项"""
     C(t, col, item, var_table, op_table, node)
     B1(t, col, item, var_table, op_table, node)
+    if node:
+        if node[0] and node[1] and node[2] and node[3] and (t.Token[1] not in ['+', '-', '*', '/']):
+            if not node[1].isdigit():
+                if var_table.search(node[1]):
+                    print(f'变量或常量未声明,第{t.Token[3]}行')
+                else:
+                    pass
+            if not node[2].isdigit():
+                if var_table.search(node[2]):
+                    print(f'变量或常量未声明,第{t.Token[3]}行')
+                else:
+                    pass
+            # if var_table.search(node[3]):
+            #     var_temp = VarItem()
+            #     var_temp.name = node[3]
+            #     var_temp.type = 'None'
+            #     if node[0] == '+':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = int(val_1) + int(val_2)
+            #         var_temp.val = str(val)
+            #         var_table.add_obj(var_temp)
+            #     elif node[0] == '-':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = int(val_1) - int(val_2)
+            #         var_temp.val = str(val)
+            #         var_table.add_obj(var_temp)
+            #     elif node[0] == '*':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = int(val_1) * int(val_2)
+            #         var_temp.val = str(val)
+            #         var_table.add_obj(var_temp)
+            #     elif node[0] == '/':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = int(val_1) / int(val_2)
+            #         var_temp.val = str(val)
+            #         var_table.add_obj(var_temp)
+            # else:
+            #     pass
+            op_table.add_node(node[:])
+            temp_obj.last = node[3]
+            node[0] = node[1] = node[2] = node[3] = ''
+        elif node[0] and node[1] and node[2] and node[3]:
+            if not node[1].isdigit():
+                if var_table.search(node[1]):
+                    print(f'变量或常量未声明,第{t.Token[3]}行')
+                else:
+                    pass
+            if not node[2].isdigit():
+                if var_table.search(node[2]):
+                    print(f'变量或常量未声明,第{t.Token[3]}行')
+                else:
+                    pass
+            # if var_table.search(node[3]):
+            #     var_temp = VarItem()
+            #     var_temp.name = node[3]
+            #     var_temp.type = 'None'
+            #     if node[0] == '+':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = int(val_1) + int(val_2)
+            #         var_temp.val = str(val)
+            #         var_table.add_obj(var_temp)
+            #     elif node[0] == '-':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = int(val_1) - int(val_2)
+            #         var_temp.val = str(val)
+            #         var_table.add_obj(var_temp)
+            #     elif node[0] == '*':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = int(val_1) * int(val_2)
+            #         var_temp.val = str(val)
+            #         var_table.add_obj(var_temp)
+            #     elif node[0] == '/':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = int(val_1) / int(val_2)
+            #         var_temp.val = str(val)
+            #         var_table.add_obj(var_temp)
+            # else:
+            #     pass
+            op_table.add_node(node[:])
+            t_var = node[3]
+            node[0] = node[1] = node[3] = ''
+            node[2] = t_var
+            node[3] = temp_obj.newtemp()
+            temp_obj.last = node[3]
 
 
 def B1(t, col, item, var_table, op_table, node):
@@ -191,6 +439,62 @@ def B1(t, col, item, var_table, op_table, node):
     if t.Token[1] == '*':
         # 常量 [*, , con, T]
         if node[0] and node[1] and node[2] and node[3]:
+            if not node[1].isdigit():
+                if var_table.search(node[1]):
+                    print(f'变量或常量未声明,第{t.Token[3]}行')
+                else:
+                    pass
+            if not node[2].isdigit():
+                if var_table.search(node[2]):
+                    print(f'变量或常量未声明,第{t.Token[3]}行')
+                else:
+                    pass
+            # if var_table.search(node[3]):
+            #     var_temp = VarItem()
+            #     var_temp.name = node[3]
+            #     var_temp.type = 'None'
+            #     if node[0] == '+':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = int(val_1) + int(val_2)
+            #         var_temp.val = str(val)
+            #         var_table.add_obj(var_temp)
+            #     elif node[0] == '-':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = int(val_1) - int(val_2)
+            #         var_temp.val = str(val)
+            #         var_table.add_obj(var_temp)
+            #     elif node[0] == '*':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = int(val_1) * int(val_2)
+            #         var_temp.val = str(val)
+            #         var_table.add_obj(var_temp)
+            #     elif node[0] == '/':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = int(val_1) / int(val_2)
+            #         var_temp.val = str(val)
+            #         var_table.add_obj(var_temp)
+            # else:
+            #     pass
             op_table.add_node(node[:])
             t_var = node[3]
             node[0] = node[1] = node[2] = node[3] = ''
@@ -201,6 +505,62 @@ def B1(t, col, item, var_table, op_table, node):
         B(t, col, item, var_table, op_table, node)
     elif t.Token[1] == '/':
         if node[0] and node[1] and node[2] and node[3]:
+            if not node[1].isdigit():
+                if var_table.search(node[1]):
+                    print(f'变量或常量未声明,第{t.Token[3]}行')
+                else:
+                    pass
+            if not node[2].isdigit():
+                if var_table.search(node[2]):
+                    print(f'变量或常量未声明,第{t.Token[3]}行')
+                else:
+                    pass
+            # if var_table.search(node[3]):
+            #     var_temp = VarItem()
+            #     var_temp.name = node[3]
+            #     var_temp.type = 'None'
+            #     if node[0] == '+':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = int(val_1) + int(val_2)
+            #         var_temp.val = str(val)
+            #         var_table.add_obj(var_temp)
+            #     elif node[0] == '-':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = int(val_1) - int(val_2)
+            #         var_temp.val = str(val)
+            #         var_table.add_obj(var_temp)
+            #     elif node[0] == '*':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = int(val_1) * int(val_2)
+            #         var_temp.val = str(val)
+            #         var_table.add_obj(var_temp)
+            #     elif node[0] == '/':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = int(val_1) / int(val_2)
+            #         var_temp.val = str(val)
+            #         var_table.add_obj(var_temp)
+            # else:
+            #     pass
             op_table.add_node(node[:])
             t_var = node[3]
             node[0] = node[1] = node[2] = node[3] = ''
@@ -211,6 +571,62 @@ def B1(t, col, item, var_table, op_table, node):
         B(t, col, item, var_table, op_table, node)
     elif t.Token[1] == '%':
         if node[0] and node[1] and node[2] and node[3]:
+            if not node[1].isdigit():
+                if var_table.search(node[1]):
+                    print(f'变量或常量未声明,第{t.Token[3]}行')
+                else:
+                    pass
+            if not node[2].isdigit():
+                if var_table.search(node[2]):
+                    print(f'变量或常量未声明,第{t.Token[3]}行')
+                else:
+                    pass
+            # if var_table.search(node[3]):
+            #     var_temp = VarItem()
+            #     var_temp.name = node[3]
+            #     var_temp.type = 'None'
+            #     if node[0] == '+':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = int(val_1) + int(val_2)
+            #         var_temp.val = str(val)
+            #         var_table.add_obj(var_temp)
+            #     elif node[0] == '-':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = int(val_1) - int(val_2)
+            #         var_temp.val = str(val)
+            #         var_table.add_obj(var_temp)
+            #     elif node[0] == '*':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = int(val_1) * int(val_2)
+            #         var_temp.val = str(val)
+            #         var_table.add_obj(var_temp)
+            #     elif node[0] == '/':
+            #         val_1 = node[1]
+            #         val_2 = node[2]
+            #         if not node[1].isdigit():
+            #             val_1 = var_table.get_val(val_1)
+            #         if not node[2].isdigit():
+            #             val_2 = var_table.get_val(val_2)
+            #         val = int(val_1) / int(val_2)
+            #         var_temp.val = str(val)
+            #         var_table.add_obj(var_temp)
+            # else:
+            #     pass
             op_table.add_node(node[:])
             t_var = node[3]
             node[0] = node[1] = node[2] = node[3] = ''
@@ -276,8 +692,13 @@ def E(t, col, item, var_table, op_table, node=None):
     """变量"""
     if t.Token[1] == 'signal':
         if item:
-            item.name = t.Token[2]
+            if var_table.search(t.Token[2]):
+                item.name = t.Token[2]
+            else:
+                print(f'变量重复声明错误,第{t.Token[3]}行')
+                var_table.pop()
         if node:
+
             if not node[1]:
                 node[1] = t.Token[2]
             elif not node[2]:
@@ -316,31 +737,31 @@ def H1(t, col):
         H(t, col)
 
 
-def I(t, col, item, var_table, op_table):
+def I(t, col, item, var_table, const_table, op_table):
     """语句"""
     if t.Token[1] in col.firsts['declare_statement']:
-        J(t, col, item, var_table, op_table)
+        J(t, col, item, var_table, const_table, op_table)
     elif t.Token[1] in col.firsts['exe_statement']:
-        B_(t, col, item, var_table, op_table)
+        B_(t, col, item, var_table, const_table, op_table)
 
 
 
-def J(t, col, item, var_table, op_table):
+def J(t, col, item, var_table, const_table, op_table):
     """声明语句"""
     if t.Token[1] in col.firsts['v_declare']:
-        K(t, col, item, var_table, op_table)
+        K(t, col, item, var_table, const_table, op_table)
     elif t.Token[1] in col.firsts['fun_declare']:
-        S(t, col, item, var_table, op_table)
+        S(t, col, item, var_table, const_table, op_table)
 
 
-def K(t, col, item, var_table, op_table):
+def K(t, col, item, var_table, const_table, op_table):
     """值声明"""
     if t.Token[1] in col.firsts['con_declare']:
         obj = ConstItem()
-        L(t, col, item, var_table, op_table)
+        L(t, col, obj, const_table, op_table)
     elif t.Token[1] in col.firsts['var_declare']:
         obj = VarItem()
-        O(t, col, item, var_table, op_table)
+        O(t, col, obj, var_table, op_table)
 
 
 def L(t, col, item, c_table):
@@ -372,7 +793,11 @@ def M(t, col, c_obj, c_table):
 def N(t, col, c_obj, c_table):
     """常量声明表"""
     if t.Token[1] == 'signal':
-        c_obj.name = t.Token[2]
+        if c_table.search(t.Token[2]):
+            c_obj.name = t.Token[2]
+        else:
+            print(f'常量重复声明错误,第{t.Token[3]}行')
+            c_table.pop()
         match('signal', t)
         if t.Token[1] == '=':
             match('=', t)
@@ -400,7 +825,7 @@ def O(t, col, item, var_table, op_table):
     else:
         obj = item
     var_table.add_obj(obj)
-    R(t, col, obj, var_table, op_table)
+    R(t, col, obj)
     P(t, col, obj, var_table, op_table)
 
 
@@ -435,7 +860,7 @@ def Q1(t, col, item, var_table, op_table):
         A_(t, col, item, var_table, op_table)
 
 
-def R(t, col, item, var_table, op_table):
+def R(t, col, item):
     """变量类型"""
     if t.Token[1] == 'int':
         match('int', t)
@@ -491,7 +916,7 @@ def U(t, col, item, fun_table):
 
 def V(t, col, item, fun_table):
     """函数声明形参"""
-    R(t, col, item, fun_table)
+    R(t, col, item)
     if t.Token[1] == 'signal':
         match('signal', t)
     V1(t, col, item, fun_table)
@@ -513,7 +938,9 @@ def W(t, col, item, var_table, op_table, node, chain):
 def W1(t, col, item, var_table, op_table, node, chain):
     """布尔表达式'"""
     if t.Token[1] == '||':
+        # a&&b||c
         if bool_lastmark[0] == '||':
+            node[0] = 'jnz'
             if node[0] and (node[1] or node[2]):
                 flag = 0
                 for i in chain.realChain:
@@ -527,6 +954,9 @@ def W1(t, col, item, var_table, op_table, node, chain):
                 if chain:
                     chain.fakeChain.append(op_table.length - 1)
                 node[1] = node[2] = ''
+            else:
+                chain.merge_real(op_table, op_table.length + 1)
+                chain.realChain.append(op_table.length)
         else:
             node[0] = 'jnz'
             if node[0] and (node[1] or node[2]):
@@ -535,13 +965,16 @@ def W1(t, col, item, var_table, op_table, node, chain):
                     if i >= op_table.length:
                         flag = 1
                 if chain and flag == 0:
-                    chain.merge_real(op_table, op_table.length + 1, True)
+                    chain.merge_real(op_table, op_table.length + 1)
                     chain.realChain.append(op_table.length)
                 op_table.add_node(node[:])
                 op_table.add_node(['j', '', '', 0])
                 if chain:
                     chain.fakeChain.append(op_table.length - 1)
                 node[1] = node[2] = ''
+            else:
+                chain.merge_real(op_table, op_table.length + 1)
+                chain.realChain.append(op_table.length)
         bool_lastmark[0] = '||'
         match('||', t)
         W(t, col, item, var_table, op_table, node, chain)
@@ -557,7 +990,9 @@ def X(t, col, item, var_table, op_table, node, chain):
 def X1(t, col, item, var_table, op_table, node, chain):
     """布尔项'"""
     if t.Token[1] == '&&':
+        # a||b&&c
         if bool_lastmark[0] == '||':
+            node[0] = 'jnz'
             if node[0] and (node[1] or node[2]):
                 flag = 0
                 for i in chain.realChain:
@@ -565,12 +1000,16 @@ def X1(t, col, item, var_table, op_table, node, chain):
                         flag = 1
                 if chain and flag == 0:
                     chain.merge_real(op_table, op_table.length + 1)
-                    chain.realChain.append(op_table.length)
+                    # chain.realChain.append(op_table.length)
+                    chain.fakeChain.append(op_table.length)
                 op_table.add_node(node[:])
                 op_table.add_node(['j', '', '', 0])
                 if chain:
                     chain.fakeChain.append(op_table.length - 1)
                 node[1] = node[2] = ''
+            else:
+                chain.merge_real(op_table, op_table.length + 1)
+                chain.realChain.append(op_table.length)
         else:
             node[0] = 'jnz'
             if node[0] and (node[1] or node[2]):
@@ -586,6 +1025,9 @@ def X1(t, col, item, var_table, op_table, node, chain):
                 if chain:
                     chain.fakeChain.append(op_table.length-1)
                 node[1] = node[2] = ''
+            else:
+                chain.merge_real(op_table, op_table.length + 1, True)
+                chain.realChain.append(op_table.length)
         bool_lastmark[0] = '&&'
         match('&&', t)
         X(t, col, item, var_table, op_table, node, chain)
@@ -597,10 +1039,15 @@ def Y(t, col, item, var_table, op_table, node, chain):
     if t.Token[1] in col.firsts['arg_exp'] and conditon(t):
         A(t, col, item, var_table, op_table, node)
     elif t.Token[1] in col.firsts['rel_expression']:
-        U_(t, col, item, var_table, op_table, node)
+        U_(t, col, item, var_table, op_table, node, chain)
+        node[0] = node[1] = node[2] = ''
+        f_node = ['j', '', '', 0]
+        op_table.add_node(f_node)
+        chain.fakeChain.append(op_table.length - 1)
     elif t.Token[1] == '!':
         match('!', t)
         W1(t, col, item, var_table, op_table, node)
+
 
 
 def Z(t, col, item, var_table, op_table):
@@ -617,6 +1064,16 @@ def Z(t, col, item, var_table, op_table):
             node = ['', '', '', temp]
             A_(t, col, item, var_table, op_table, node)
             node = ['=', '', temp_obj.last, obj]
+            # 赋值操作
+            # 临时变量是否在符号表中 不在就添加到符号表
+            if var_table.search(obj):
+                print(f'变量未声明,第{t.Token[3]}行')
+            else:
+                pass
+                # if temp_obj.last.isdigit():
+                #     var_table.update(obj, temp_obj.last)
+                # else:
+                #     var_table.update(obj, var_table.get_val(temp_obj.last))
             op_table.add_node(node[:])
             # 添加四元式
 
@@ -627,21 +1084,25 @@ def A_(t, col, item, var_table, op_table, node=None, chain=None):
         # 赋值操作[=, ,T ,signal] 添加四元式
         A(t, col, item, var_table, op_table, node)
     elif t.Token[1] in col.firsts['rel_expression'] and (t.tokens[t.p][1] != '=' and conditon1(t)):
-        U_(t, col, item, var_table, op_table, node)
+        chain.reset(r_chain=True)
+        temp = temp_obj.newtemp()
+        node[3] = temp
+        temp_obj.last = temp
+        U_(t, col, item, var_table, op_table, node, chain)
     elif t.Token[1] in col.firsts['bool_expression'] and (t.tokens[t.p][1] != '='):
         W(t, col, item, var_table, op_table, node, chain)
     elif t.Token[1] in col.firsts['assign_expression']:
         Z(t, col, item, var_table, op_table)
 
 
-def B_(t, col, item, var_table, op_table):
+def B_(t, col, item, var_table, const_table, op_table):
     """执行语句"""
     if t.Token[1] in col.firsts['digit_exe_statement']:
         C_(t, col, item, var_table, op_table)
     elif t.Token[1] in col.firsts['control_statement']:
-        F_(t, col, item, var_table, op_table)
+        F_(t, col, item, var_table, const_table, op_table)
     elif t.Token[1] in col.firsts['complex_statement']:
-        G_(t, col, item, var_table, op_table)
+        G_(t, col, item, var_table, const_table, op_table)
 
 
 def C_(t, col, item, var_table, op_table):
@@ -666,42 +1127,42 @@ def E_(t, col):
         match(';', t)
 
 
-def F_(t, col, item, var_table, op_table):
+def F_(t, col, item, var_table, const_table, op_table):
     """控制语句"""
     if t.Token[1] in col.firsts['if_statement']:
-        I_(t, col, item, var_table, op_table)
+        I_(t, col, item, var_table, const_table, op_table)
     elif t.Token[1] in col.firsts['for_statement']:
         J_(t, col, item, var_table, op_table)
     elif t.Token[1] in col.firsts['while_statement']:
-        K_(t, col, item, var_table, op_table)
+        K_(t, col, item, var_table, const_table, op_table)
     elif t.Token[1] in col.firsts['do_while_statement']:
         L_(t, col, item, var_table, op_table)
     elif t.Token[1] in col.firsts['return_statement']:
         R_(t, col)
 
 
-def G_(t, col, item, var_table, op_table):
+def G_(t, col, item, var_table, const_table, op_table):
     """复合语句"""
     if t.Token[1] == '{':
         match('{', t)
-        H_(t, col, item, var_table, op_table)
+        H_(t, col, item, var_table, const_table, op_table)
         if t.Token[1] == '}':
             match('}', t)
 
 
-def H_(t, col, item, var_table, op_table):
+def H_(t, col, item, var_table, const_table, op_table):
     """语句表"""
-    I(t, col, item, var_table, op_table)
-    H_1(t, col, item, var_table, op_table)
+    I(t, col, item, var_table, const_table, op_table)
+    H_1(t, col, item, var_table, const_table, op_table)
 
 
-def H_1(t, col, item, var_table, op_table):
+def H_1(t, col, item, var_table, const_table, op_table):
     """语句表'"""
     if t.Token[1] in col.firsts['statement_list']:
-        H_(t, col, item, var_table, op_table)
+        H_(t, col, item, var_table, const_table, op_table)
 
 
-def I_(t, col, item, var_table, op_table):
+def I_(t, col, item, var_table, const_table, op_table):
     """if语句"""
     chain = ENTRY()
     if t.Token[1] == 'if':
@@ -713,10 +1174,10 @@ def I_(t, col, item, var_table, op_table):
             A_(t, col, item, var_table, op_table, node, chain)
             if entry_offset[0] != 0:
                 chain.realChain[-1] = entry_offset[0]
-                print(entry_offset[0])
+                # print(entry_offset[0])
                 entry_offset[0] = 0
 
-
+            # print(chain.realChain)
             if node[0] == 'jnz' and (node[1] or node[2]):
                 if bool_lastmark[0] == '||':
                     bool_reset = False
@@ -725,16 +1186,16 @@ def I_(t, col, item, var_table, op_table):
                 chain.merge_real(op_table, op_table.length + 1, bool_reset)
                 chain.realChain.append(op_table.length)
                 op_table.add_node(node[:])
+                f_node = ['j', '', '', 0]
+                op_table.add_node(f_node)
+                chain.fakeChain.append(op_table.length - 1)
                 node[1] = node[2] = ''
+                # 假出口未知
 
-            # 假出口未知
-            f_node = ['j', '', '', 0]
-            op_table.add_node(f_node)
-            chain.fakeChain.append(op_table.length-1)
             if t.Token[1] == ')':
                 match(')', t)
-                chain.merge_real(op_table, op_table.length+1)
-                I(t, col, item, var_table, op_table)
+                chain.merge_real(op_table, op_table.length+1, True)
+                I(t, col, item, var_table, const_table, op_table)
 
 
                 # 回填假出口
@@ -789,7 +1250,7 @@ def J_(t, col, item, var_table, op_table):
                         chain.merge_fake(op_table, op_table.length+1)
 
 
-def K_(t, col, item, var_table, op_table):
+def K_(t, col, item, var_table, const_table, op_table):
     """while语句"""
     chain = ENTRY()
     entry = [0]
@@ -808,7 +1269,7 @@ def K_(t, col, item, var_table, op_table):
             if t.Token[1] == ')':
                 match(')', t)
                 chain.merge_real(op_table, op_table.length+1)
-                M_(t, col, item, var_table, op_table)
+                M_(t, col, item, var_table, const_table, op_table)
                 chain.merge_fake(op_table, op_table.length+2)
                 op_table.add_node(['j', '', '', entry[0]])
                 entry[0] = 0
@@ -841,11 +1302,11 @@ def L_(t, col, item, var_table, op_table):
                         match(';', t)
 
 
-def M_(t, col, item, var_table, op_table):
+def M_(t, col, item, var_table, const_table, op_table):
     """循环语句"""
     # 书上给的词法在循环语句中没有执行语句,在循环内的执行语句如赋值无法正确识别 ----
     if t.Token[1] in col.firsts['exe_statement']:
-        B_(t, col, item, var_table, op_table)
+        B_(t, col, item, var_table, const_table, op_table)
     elif t.Token[1] in col.firsts['declare_statement']:
         J(t, col)
     elif t.Token[1] in col.firsts['cir_exe_statement']:
@@ -948,14 +1409,18 @@ def T_(t, col):
 
 
 
-def U_(t, col, item, var_table, op_table, node):
+def U_(t, col, item, var_table, op_table, node, chain):
     """关系表达式"""
-
     A(t, col, item, var_table, op_table, node)
     if node[0] and node[1] and node[2] and node[3]:
         n_t = node[3]
         op_table.add_node(node[:])
         node = ['', n_t, '', 0]
+    else:
+        node = ['', temp_obj.last, '', 0]
+    chain.realChain.append(op_table.length)
+
+
     V_(t, col, item, var_table, op_table, node)
     only_const = ''
     const_index = 0

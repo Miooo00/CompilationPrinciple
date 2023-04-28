@@ -54,7 +54,7 @@ def conditon(t):
     p = t.p
     simbol = ['>', '<', '>=', '<=', '==', '!=']
     wrong = t.tokens[p][3]
-    while p < len(t.tokens) and t.tokens[p][1] != ')' and t.tokens[p][1] != ';':
+    while p < len(t.tokens) and t.tokens[p][1] != ';':
         if wrong != t.tokens[p][3]:
             break
         if t.tokens[p][1] in simbol:
@@ -895,11 +895,11 @@ def I_(t, col, parent, tree, errors):
         match('if', t)
         if t.Token[1] == '(':
             match('(', t)
-            if t.Token[1] != 'signal':
-                errors.append(f'出现错误,if语句表达式异常,第{t.tokens[t.p-2][3]}行')
-                print(f'出现错误,if语句表达式异常,第{t.tokens[t.p-2][3]}行')
-                t.p -= 1
-                t.Token = [-1, 'signal', 'None', -1]
+            # if t.Token[1] != 'signal':
+            #     errors.append(f'出现错误,if语句表达式异常,第{t.tokens[t.p-2][3]}行')
+            #     print(f'出现错误,if语句表达式异常,第{t.tokens[t.p-2][3]}行')
+            #     t.p -= 1
+            #     t.Token = [-1, 'signal', 'None', -1]
 
             sub1 = Node('expression')
             tree.add_node(sub1, parent)
