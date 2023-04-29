@@ -765,6 +765,10 @@ def B_(t, col, parent, tree, errors):
         F_(t, col, sub2, tree, errors)
     elif t.Token[1] in col.firsts['complex_statement']:
         G_(t, col, parent, tree, errors)
+    elif t.Token[1] in col.firsts['break_statement']:
+        S_(t, col, parent, tree, errors)
+    elif t.Token[1] in col.firsts['continue_statement']:
+        T_(t, col, parent, tree, errors)
     else:
         # error
         pass
@@ -1654,7 +1658,7 @@ def Q_(t, col, parent, tree, errors):
                 else:
                     left = 0
                 # 书上文法无语句
-                I(t, col, parent, tree, errors)
+                M_(t, col, parent, tree, errors)
                 Q_1(t, col, parent, tree, errors)
                 if t.Token[1] == '}' and left != 0 and t.p != len(t.tokens):
                     errors.append(f'出现错误,复合语句缺少左大括号,第{left}行')

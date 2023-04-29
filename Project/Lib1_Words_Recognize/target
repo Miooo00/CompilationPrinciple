@@ -1,14 +1,21 @@
-
 main()
+
 {
-    int i = 0;
-    while(i<=100)
-    {
-        if(i==10)
-        {
-            x = x + 1;
+    int a = 0;
+    int b = 0;
+    while(a<=100){
+        a = a+1;
+        if(x>0&&y<100){
+            b = b + 1;
         }
-        i = const_x + 1;
+        if(a==b)
+        {
+            break;
+        }
+        else
+        {
+            continue;
+        }
     }
-    y = 0;
+    b = b/10;
 }

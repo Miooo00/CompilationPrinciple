@@ -47,12 +47,12 @@ if_statement'→$<or>else statement
 for_statement→for ( expression ; expression ; expression ) cir_statement
 while_statement→while ( expression ) cir_statement
 do_while_statement→do cir_complex_statement while ( expression ) ;
-cir_statement→digit_exe_statement<or>fun_invoke_statement<or>declare_statement<or>cir_exe_statement<or>cir_complex_statement
+cir_statement→declare_statement<or>cir_exe_statement<or>cir_complex_statement
 cir_complex_statement→{ cir_statement_list }
 cir_statement_list→cir_statement cir_statement_list'
 cir_statement_list'→$<or>cir_statement_list
-cir_exe_statement→cir_if_statement<or>for_statement<or>while_statement<or>do_while_statement<or>return_statement<or>break_statement<or>continue_statement
-cir_if_statement→if ( expression ) cir_if_statement'
+cir_exe_statement→digit_exe_statement<or>cir_if_statement<or>for_statement<or>while_statement<or>do_while_statement<or>return_statement<or>break_statement<or>continue_statement
+cir_if_statement→if ( expression ) cir_statement cir_if_statement'
 cir_if_statement'→$<or>else cir_statement
 return_statement→return return_statement'
 return_statement'→;<or>expression ;
