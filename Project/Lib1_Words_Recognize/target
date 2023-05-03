@@ -1,21 +1,16 @@
 main()
 
 {
-    int a = 0;
-    int b = 0;
-    while(a<=100){
-        a = a+1;
-        if(x>0&&y<100){
-            b = b + 1;
-        }
-        if(a==b)
+    int i,a,b,c,d,h,g,p;
+    for(i=a+b*2;i<c+d+10;i=i+1)
+    {
+        if(h&&g&&z)
         {
-            break;
+            p = p + 1;
         }
         else
         {
-            continue;
+            p = p + 2;
         }
     }
-    b = b/10;
 }

@@ -3,10 +3,13 @@ import copy
 from Project.Lib4_Semantic_Analyse.Tables import ConstItem, VarItem, Temp, ENTRY
 
 
-
+# 临时变量创建器
 temp_obj = Temp()
+# 布尔变量标记 标记上一个出现的布尔运算符
 bool_lastmark = ['']
+# 出口补偿 忘了
 entry_offset = [0]
+# 循环内判断 1在循环中 0不在
 cir_state = [0]
 
 
@@ -162,6 +165,7 @@ def A(t, col, item, var_table, op_table, node, chain):
             elif not node[2]:
                 node[2] = temp
             next_node = ['', '', '', temp]
+            var_table.add_obj(VarItem(name=temp))
     B(t, col, item, var_table, op_table, next_node, chain)
     if node:
         if node[0] and node[1] and node[2] and node[3] and (t.Token[1] not in ['+', '-', '*', '/']):
@@ -222,7 +226,8 @@ def A(t, col, item, var_table, op_table, node, chain):
             # else:
             #     pass
             op_table.add_node(node[:])
-            chain.merge_real(op_table, op_table.length)
+            if chain:
+                chain.merge_real(op_table, op_table.length)
             temp_obj.last = node[3]
             node[0] = node[1] = node[2] = node[3] = ''
         elif node[0] and node[1] and node[2] and node[3]:
@@ -242,6 +247,7 @@ def A(t, col, item, var_table, op_table, node, chain):
             node[0] = node[1] = node[3] = ''
             node[2] = t_var
             node[3] = temp_obj.newtemp()
+            var_table.add_obj(VarItem(name=node[3]))
             temp_obj.last = node[3]
     # 若node填满加表
     A1(t, col, item, var_table, op_table, node, chain)
@@ -276,6 +282,9 @@ def B(t, col, item, var_table, op_table, node, chain):
                     print(f'变量或常量未声明,第{t.Token[3]}行')
                 else:
                     pass
+            if node[0] == '/' and int(node[2]) == 0:
+                print(f'出现错误,除数为0,第{t.Token[3]}行')
+                exit()
             op_table.add_node(node[:])
             if chain:
                 chain.merge_real(op_table, op_table.length)
@@ -292,9 +301,12 @@ def B(t, col, item, var_table, op_table, node, chain):
                     print(f'变量或常量未声明,第{t.Token[3]}行')
                 else:
                     pass
-
+            if node[0] == '/' and int(node[2]) == 0:
+                print(f'出现错误,除数为0,第{t.Token[3]}行')
+                exit()
             op_table.add_node(node[:])
-            chain.merge_real(op_table, op_table.length)
+            if chain:
+                chain.merge_real(op_table, op_table.length)
             t_var = node[3]
             node[0] = node[1] = node[3] = ''
             node[2] = t_var
@@ -340,7 +352,9 @@ def B1(t, col, item, var_table, op_table, node, chain):
                     print(f'变量或常量未声明,第{t.Token[3]}行')
                 else:
                     pass
-
+            if int(node[2]) == 0:
+                print(f'出现错误,除数为0,第{t.Token[3]}行')
+                exit()
             op_table.add_node(node[:])
             if chain:
                 chain.merge_real(op_table, op_table.length)
@@ -776,7 +790,7 @@ def X1(t, col, item, var_table, op_table, node, chain):
 def Y(t, col, item, var_table, op_table, node, chain):
     """布尔因子"""
     if t.Token[1] in col.firsts['arg_exp'] and conditon(t):
-        A(t, col, item, var_table, op_table, node)
+        A(t, col, item, var_table, op_table, node, chain)
     elif t.Token[1] in col.firsts['rel_expression']:
         U_(t, col, item, var_table, op_table, node, chain)
         node[0] = node[1] = node[2] = ''
@@ -1002,20 +1016,20 @@ def J_(t, col, item, var_table, const_table, op_table):
                 node = ['', '', '', 0]
                 chain.realChain.append(op_table.length)
                 A_(t, col, item, var_table, op_table, node, chain)
-                f_node = ['j', '', '', 0]
-                op_table.add_node(f_node)
-                chain.fakeChain.append(op_table.length - 1)
+                # f_node = ['j', '', '', 0]
+                # op_table.add_node(f_node)
+                # chain.fakeChain.append(op_table.length - 1)
                 if t.Token[1] == ';':
                     match(';', t)
                     node = ['', '', '', '']
-                    entry[0] = op_table.length-2
+                    entry[0] = op_table.length-1
                     A_(t, col, item, var_table, op_table, node, chain)
                     entry[1] = op_table.length-1
                     op_table.add_node(['j', '', '', entry[0]])
 
                     if t.Token[1] == ')':
                         match(')', t)
-                        chain.merge_real(op_table, op_table.length+1)
+                        chain.merge_real(op_table, op_table.length+1, True)
                         M_(t, col, item, var_table, const_table, op_table, chain, op_table.length+1)
                         op_table.add_node(['j', '', '', entry[1]])
                         chain.merge_fake(op_table, op_table.length+1)
@@ -1034,9 +1048,9 @@ def K_(t, col, item, var_table, const_table, op_table):
             chain.realChain.append(op_table.length)
             A_(t, col, item, var_table, op_table, node, chain)
 
-            f_node = ['j', '', '', 0]
-            op_table.add_node(f_node)
-            chain.fakeChain.append(op_table.length - 1)
+            # f_node = ['j', '', '', 0]
+            # op_table.add_node(f_node)
+            # chain.fakeChain.append(op_table.length - 1)
             if t.Token[1] == ')':
                 match(')', t)
                 chain.merge_real(op_table, op_table.length+1)
@@ -1138,10 +1152,10 @@ def Q_(t, col, item, var_table, const_table, op_table, for_chain, continue_entry
             node = ['', '', '', 0]
             chain.realChain.append(op_table.length)
             A_(t, col, item, var_table, op_table, node, chain)
-            if entry_offset[0] != 0:
-                chain.realChain[-1] = entry_offset[0]
-                # print(entry_offset[0])
-                entry_offset[0] = 0
+            # if entry_offset[0] != 0:
+            #     chain.realChain[-1] = entry_offset[0]
+            #     # print(entry_offset[0])
+            #     entry_offset[0] = 0
 
             # print(chain.realChain)
             if bool_lastmark[0] in ['&&', '||']:
@@ -1160,15 +1174,15 @@ def Q_(t, col, item, var_table, const_table, op_table, for_chain, continue_entry
             elif node[0] == 'jnz':
                 op_table.add_node(node[:])
                 chain.merge_real(op_table, op_table.length + 2, False)
-                f_node = ['j', '', '', 0]
-                op_table.add_node(f_node)
-                chain.fakeChain.append(op_table.length - 1)
+                # f_node = ['j', '', '', 0]
+                # op_table.add_node(f_node)
+                # chain.fakeChain.append(op_table.length - 1)
                 node[1] = node[2] = ''
             else:
                 chain.merge_real(op_table, op_table.length + 2, False)
-                f_node = ['j', '', '', 0]
-                op_table.add_node(f_node)
-                chain.fakeChain.append(op_table.length - 1)
+                # f_node = ['j', '', '', 0]
+                # op_table.add_node(f_node)
+                # chain.fakeChain.append(op_table.length - 1)
                 node[1] = node[2] = ''
                 # 假出口未知
 

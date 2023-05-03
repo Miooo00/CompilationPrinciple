@@ -17,11 +17,11 @@ class FunctionItem:
 
 
 class VarItem:
-    def __init__(self):
+    def __init__(self, name='', type='', val=''):
         self.entry = 1
-        self.name = ''
-        self.type = ''
-        self.val = ''
+        self.name = name
+        self.type = type
+        self.val = val
 
     def items_print(self):
         print(self.entry, self.name, self.type, self.val)
