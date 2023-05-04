@@ -1,16 +1,44 @@
+int fun(int x, int y);
+const int z = 5;
+int x1 = 10;
 main()
-
 {
-    int i,a,b,c,d,h,g,p;
-    for(i=a+b*2;i<c+d+10;i=i+1)
+    int x = 0;
+    int y = 0;
+    do
     {
-        if(h&&g&&z)
+        if(x>0)
         {
-            p = p + 1;
+            int a = 0;
+            a = 3;
         }
-        else
+        if(x<0)
         {
-            p = p + 2;
+            int b = 2;
+            b = 2;
         }
-    }
+        while(a&&b&&a<10)
+        {
+            int c = 0;
+            c = 5;
+            if(c>0)
+            {
+                int d = 0;
+                d = 5;
+                continue;
+            }
+        }
+        if(a+b>=10)
+        {
+            a = 0;
+            b = 0;
+            break;
+        }
+    }while(x<10);
+    fun(1, 2);
+
+}
+int fun(int x, int y)
+{
+    return x+y;
 }

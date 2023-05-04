@@ -153,7 +153,7 @@ Z_ 程序
 A__ 函数块
 """
 
-def A(t, col, item, var_table, op_table, node, chain):
+def A(t, col, item, var_table, op_table, node, chain, f_str, errors):
     """算术表达式"""
     # 算术操作[ , , ,T] 添加四元式
     next_node = node
@@ -165,82 +165,40 @@ def A(t, col, item, var_table, op_table, node, chain):
             elif not node[2]:
                 node[2] = temp
             next_node = ['', '', '', temp]
-            var_table.add_obj(VarItem(name=temp))
-    B(t, col, item, var_table, op_table, next_node, chain)
+    B(t, col, item, var_table, op_table, next_node, chain, f_str, errors)
     if node:
         if node[0] and node[1] and node[2] and node[3] and (t.Token[1] not in ['+', '-', '*', '/']):
             if not node[1].isdigit():
-                if var_table.search(node[1]):
-                    print(f'变量或常量未声明,第{t.Token[3]}行')
-                else:
+                if var_table.search_in_field(node[1], f_str):
                     pass
+                else:
+                    errors.append(f'变量或常量未声明,第{t.Token[3]}行')
+                    print(f'变量或常量未声明,第{t.Token[3]}行')
             if not node[2].isdigit():
-                if var_table.search(node[2]):
-                    print(f'变量或常量未声明,第{t.Token[3]}行')
-                else:
+                if var_table.search_in_field(node[2], f_str):
                     pass
-            # if var_table.search(node[3]):
-            #     var_temp = VarItem()
-            #     var_temp.name = node[3]
-            #     var_temp.type = 'None'
-            #     if node[0] == '+':
-            #         val_1 = node[1]
-            #         val_2 = node[2]
-            #         if not node[1].isdigit():
-            #             val_1 = var_table.get_val(val_1)
-            #         if not node[2].isdigit():
-            #             val_2 = var_table.get_val(val_2)
-            #         val = val_1 + val_2
-            #         var_temp.val = val
-            #         var_table.add_obj(var_temp)
-            #     elif node[0] == '-':
-            #         val_1 = node[1]
-            #         val_2 = node[2]
-            #         if not node[1].isdigit():
-            #             val_1 = var_table.get_val(val_1)
-            #         if not node[2].isdigit():
-            #             val_2 = var_table.get_val(val_2)
-            #         val = val_1 - val_2
-            #         var_temp.val = val
-            #         var_table.add_obj(var_temp)
-            #     elif node[0] == '*':
-            #         val_1 = node[1]
-            #         val_2 = node[2]
-            #         if not node[1].isdigit():
-            #             val_1 = var_table.get_val(val_1)
-            #         if not node[2].isdigit():
-            #             val_2 = var_table.get_val(val_2)
-            #         val = val_1 * val_2
-            #         var_temp.val = val
-            #         var_table.add_obj(var_temp)
-            #     elif node[0] == '/':
-            #         val_1 = node[1]
-            #         val_2 = node[2]
-            #         if not node[1].isdigit():
-            #             val_1 = var_table.get_val(val_1)
-            #         if not node[2].isdigit():
-            #             val_2 = var_table.get_val(val_2)
-            #         val = val_1 / val_2
-            #         var_temp.val = val
-            #         var_table.add_obj(var_temp)
-            # else:
-            #     pass
+                else:
+                    errors.append(f'变量或常量未声明,第{t.Token[3]}行')
+                    print(f'变量或常量未声明,第{t.Token[3]}行')
             op_table.add_node(node[:])
             if chain:
                 chain.merge_real(op_table, op_table.length)
+            var_table.add_obj(VarItem(name=node[3]))
             temp_obj.last = node[3]
             node[0] = node[1] = node[2] = node[3] = ''
         elif node[0] and node[1] and node[2] and node[3]:
             if not node[1].isdigit():
-                if var_table.search(node[1]):
-                    print(f'变量或常量未声明,第{t.Token[3]}行')
-                else:
+                if var_table.search_in_field(node[1], f_str):
                     pass
+                else:
+                    errors.append(f'变量或常量未声明,第{t.Token[3]}行')
+                    print(f'变量或常量未声明,第{t.Token[3]}行')
             if not node[2].isdigit():
-                if var_table.search(node[2]):
-                    print(f'变量或常量未声明,第{t.Token[3]}行')
-                else:
+                if var_table.search_in_field(node[2], f_str):
                     pass
+                else:
+                    errors.append(f'变量或常量未声明,第{t.Token[3]}行')
+                    print(f'变量或常量未声明,第{t.Token[3]}行')
             op_table.add_node(node[:])
             chain.merge_real(op_table, op_table.length)
             t_var = node[3]
@@ -249,64 +207,82 @@ def A(t, col, item, var_table, op_table, node, chain):
             node[3] = temp_obj.newtemp()
             var_table.add_obj(VarItem(name=node[3]))
             temp_obj.last = node[3]
+        elif node[0] == 'para':
+            if node[1]:
+                op_table.add_node(node[:])
+                node[1] = node[2] = node[3] = ''
     # 若node填满加表
-    A1(t, col, item, var_table, op_table, node, chain)
+    A1(t, col, item, var_table, op_table, node, chain, f_str, errors)
 
 
 
-def A1(t, col, item, var_table, op_table, node, chain):
+def A1(t, col, item, var_table, op_table, node, chain, f_str, errors):
     """ 算术表达式' """
     if t.Token[1] == '+':
         node[0] = '+'
         match('+', t)
-        A(t, col, item, var_table, op_table, node, chain)
+        A(t, col, item, var_table, op_table, node, chain, f_str, errors)
     elif t.Token[1] == '-':
         node[0] = '-'
         match('-', t)
-        A(t, col, item, var_table, op_table, node, chain)
+        A(t, col, item, var_table, op_table, node, chain, f_str, errors)
 
 
-def B(t, col, item, var_table, op_table, node, chain):
+def B(t, col, item, var_table, op_table, node, chain, f_str, errors):
     """项"""
-    C(t, col, item, var_table, op_table, node)
-    B1(t, col, item, var_table, op_table, node, chain)
+    C(t, col, item, var_table, op_table, node, chain, f_str, errors)
+    B1(t, col, item, var_table, op_table, node, chain, f_str, errors)
     if node:
         if node[0] and node[1] and node[2] and node[3] and (t.Token[1] not in ['+', '-', '*', '/']):
             if not node[1].isdigit():
-                if var_table.search(node[1]):
-                    print(f'变量或常量未声明,第{t.Token[3]}行')
-                else:
+                # if var_table.search(node[1]):
+                #     print(f'变量或常量未声明,第{t.Token[3]}行')
+                # else:
+                #     pass
+                if var_table.search_in_field(node[1], f_str):
                     pass
+                else:
+                    errors.append(f'变量或常量未声明,第{t.Token[3]}行')
+                    print(f'变量或常量未声明,第{t.Token[3]}行')
             if not node[2].isdigit():
-                if var_table.search(node[2]):
-                    print(f'变量或常量未声明,第{t.Token[3]}行')
-                else:
+                # if var_table.search(node[2]):
+                #     print(f'变量或常量未声明,第{t.Token[3]}行')
+                # else:
+                #     pass
+                if var_table.search_in_field(node[2], f_str):
                     pass
+                else:
+                    errors.append(f'变量或常量未声明,第{t.Token[3]}行')
+                    print(f'变量或常量未声明,第{t.Token[3]}行')
             if node[0] == '/' and int(node[2]) == 0:
                 print(f'出现错误,除数为0,第{t.Token[3]}行')
                 exit()
             op_table.add_node(node[:])
             if chain:
                 chain.merge_real(op_table, op_table.length)
+            var_table.add_obj(VarItem(name=node[3]))
             temp_obj.last = node[3]
             node[0] = node[1] = node[2] = node[3] = ''
         elif node[0] and node[1] and node[2] and node[3]:
             if not node[1].isdigit():
-                if var_table.search(node[1]):
-                    print(f'变量或常量未声明,第{t.Token[3]}行')
-                else:
+                if var_table.search_in_field(node[1], f_str):
                     pass
+                else:
+                    errors.append(f'变量或常量未声明,第{t.Token[3]}行')
+                    print(f'变量或常量未声明,第{t.Token[3]}行')
             if not node[2].isdigit():
-                if var_table.search(node[2]):
-                    print(f'变量或常量未声明,第{t.Token[3]}行')
-                else:
+                if var_table.search_in_field(node[2], f_str):
                     pass
+                else:
+                    errors.append(f'变量或常量未声明,第{t.Token[3]}行')
+                    print(f'变量或常量未声明,第{t.Token[3]}行')
             if node[0] == '/' and int(node[2]) == 0:
                 print(f'出现错误,除数为0,第{t.Token[3]}行')
                 exit()
             op_table.add_node(node[:])
             if chain:
                 chain.merge_real(op_table, op_table.length)
+            var_table.add_obj(VarItem(name=node[3]))
             t_var = node[3]
             node[0] = node[1] = node[3] = ''
             node[2] = t_var
@@ -314,18 +290,20 @@ def B(t, col, item, var_table, op_table, node, chain):
             temp_obj.last = node[3]
 
 
-def B1(t, col, item, var_table, op_table, node, chain):
+def B1(t, col, item, var_table, op_table, node, chain, f_str, errors):
     """ 项' """
     if t.Token[1] == '*':
         # 常量 [*, , con, T]
         if node[0] and node[1] and node[2] and node[3]:
             if not node[1].isdigit():
                 if var_table.search(node[1]):
+                    errors.append(f'变量或常量未声明,第{t.Token[3]}行')
                     print(f'变量或常量未声明,第{t.Token[3]}行')
                 else:
                     pass
             if not node[2].isdigit():
                 if var_table.search(node[2]):
+                    errors.append(f'变量或常量未声明,第{t.Token[3]}行')
                     print(f'变量或常量未声明,第{t.Token[3]}行')
                 else:
                     pass
@@ -333,6 +311,7 @@ def B1(t, col, item, var_table, op_table, node, chain):
             op_table.add_node(node[:])
             if chain:
                 chain.merge_real(op_table, op_table.length)
+            var_table.add_obj(VarItem(name=node[3]))
             t_var = node[3]
             node[0] = node[1] = node[2] = node[3] = ''
             node[2] = t_var
@@ -344,11 +323,13 @@ def B1(t, col, item, var_table, op_table, node, chain):
         if node[0] and node[1] and node[2] and node[3]:
             if not node[1].isdigit():
                 if var_table.search(node[1]):
+                    errors.append(f'变量或常量未声明,第{t.Token[3]}行')
                     print(f'变量或常量未声明,第{t.Token[3]}行')
                 else:
                     pass
             if not node[2].isdigit():
                 if var_table.search(node[2]):
+                    errors.append(f'变量或常量未声明,第{t.Token[3]}行')
                     print(f'变量或常量未声明,第{t.Token[3]}行')
                 else:
                     pass
@@ -358,6 +339,7 @@ def B1(t, col, item, var_table, op_table, node, chain):
             op_table.add_node(node[:])
             if chain:
                 chain.merge_real(op_table, op_table.length)
+            var_table.add_obj(VarItem(name=node[3]))
             t_var = node[3]
             node[0] = node[1] = node[2] = node[3] = ''
             node[2] = t_var
@@ -369,11 +351,13 @@ def B1(t, col, item, var_table, op_table, node, chain):
         if node[0] and node[1] and node[2] and node[3]:
             if not node[1].isdigit():
                 if var_table.search(node[1]):
+                    errors.append(f'变量或常量未声明,第{t.Token[3]}行')
                     print(f'变量或常量未声明,第{t.Token[3]}行')
                 else:
                     pass
             if not node[2].isdigit():
                 if var_table.search(node[2]):
+                    errors.append(f'变量或常量未声明,第{t.Token[3]}行')
                     print(f'变量或常量未声明,第{t.Token[3]}行')
                 else:
                     pass
@@ -381,6 +365,7 @@ def B1(t, col, item, var_table, op_table, node, chain):
             op_table.add_node(node[:])
             if chain:
                 chain.merge_real(op_table, op_table.length)
+            var_table.add_obj(VarItem(name=node[3]))
             t_var = node[3]
             node[0] = node[1] = node[2] = node[3] = ''
             node[2] = t_var
@@ -390,7 +375,7 @@ def B1(t, col, item, var_table, op_table, node, chain):
         B(t, col, item, var_table, op_table, node)
 
 
-def C(t, col, item, var_table, op_table, node):
+def C(t, col, item, var_table, op_table, node, chain, f_str, errors):
     """因子"""
     if t.Token[1] == '(':
         match('(', t)
@@ -403,7 +388,7 @@ def C(t, col, item, var_table, op_table, node):
             node_pass = ['', '', '', p]
         else:
             node_pass = node
-        A(t, col, item, var_table, op_table, node_pass)
+        A(t, col, item, var_table, op_table, node_pass, chain, f_str, errors)
         if t.Token[1] == ')':
             match(')', t)
     elif t.Token[1] in col.firsts['con']:
@@ -412,7 +397,7 @@ def C(t, col, item, var_table, op_table, node):
         D(t, col, item, var_table, op_table, node)
     elif t.Token[1] in col.firsts['var'] and (t.tokens[t.p][1] != '('):
         # 变量 new = [, , var,T]
-        E(t, col, item, var_table, op_table, node)
+        E(t, col, item, var_table, op_table, node, errors)
     elif t.Token[1] in col.firsts['fun_invoke']:
         F(t, col, item, var_table, op_table)
 
@@ -441,13 +426,14 @@ def D(t, col, item=None, table=None, op_table=None, node=None):
         match('sig_con', t)
 
 
-def E(t, col, item, var_table, op_table, node=None):
+def E(t, col, item, var_table, op_table, node, errors):
     """变量"""
     if t.Token[1] == 'signal':
         if item:
             if var_table.search(t.Token[2]):
                 item.name = t.Token[2]
             else:
+                errors.append(f'变量重复声明错误,第{t.Token[3]}行')
                 print(f'变量重复声明错误,第{t.Token[3]}行')
                 var_table.pop()
         if node:
@@ -460,74 +446,83 @@ def E(t, col, item, var_table, op_table, node=None):
         match('signal', t)
 
 
-def F(t, col):
+def F(t, col, item, var_table, op_table):
     """函数调用"""
     if t.Token[1] == 'signal':
+        func_name = t.Token[2]
         match('signal', t)
         if t.Token[1] == '(':
             match('(', t)
-            G(t, col)
+            G(t, col, item, var_table, op_table)
             if t.Token[1] == ')':
                 match(')', t)
+                op_table.add_node(['call', func_name, '', ''])
 
 
-def G(t, col):
+def G(t, col, item, var_table, op_table):
     """实参列表"""
     if t.Token[1] in col.firsts['real_par']:
-        H(t, col)
+        H(t, col, item, var_table, op_table)
 
 
-def H(t, col):
+def H(t, col, item, var_table, op_table):
     """实参"""
-    A_(t, col)
-    H1(t, col)
+
+    temp = temp_obj.newtemp()
+    node = ['', '', '', temp]
+    A_(t, col, item, var_table, op_table, node)
+    op_table.add_node(['para', temp_obj.last, '', '', ])
+    H1(t, col, item, var_table, op_table)
 
 
-def H1(t, col):
+def H1(t, col, item, var_table, op_table):
     """ 实参' """
     if t.Token[1] == ',':
         match(',', t)
-        H(t, col)
+        H(t, col, item, var_table, op_table)
 
 
-def I(t, col, item, var_table, const_table, op_table):
+def I(t, col, item, var_table, const_table, op_table, field, f_str, errors):
     """语句"""
     if t.Token[1] in col.firsts['declare_statement']:
-        J(t, col, item, var_table, const_table, op_table)
+        J(t, col, item, var_table, const_table, op_table, f_str, errors)
     elif t.Token[1] in col.firsts['exe_statement']:
-        B_(t, col, item, var_table, const_table, op_table)
+        B_(t, col, item, var_table, const_table, op_table, field, f_str, errors)
 
 
 
-def J(t, col, item, var_table, const_table, op_table):
+def J(t, col, item, var_table, const_table, op_table, f_str, errors):
     """声明语句"""
     if t.Token[1] in col.firsts['v_declare']:
-        K(t, col, item, var_table, const_table, op_table)
+        K(t, col, item, var_table, const_table, op_table, f_str, errors)
     elif t.Token[1] in col.firsts['fun_declare']:
-        S(t, col, item, var_table, const_table, op_table)
+        S(t, col, item, var_table, const_table, op_table,)
 
 
-def K(t, col, item, var_table, const_table, op_table):
+def K(t, col, item, var_table, const_table, op_table, f_str, errors):
     """值声明"""
     if t.Token[1] in col.firsts['con_declare']:
         obj = ConstItem()
+        obj.field = f_str
         L(t, col, obj, const_table, op_table)
     elif t.Token[1] in col.firsts['var_declare']:
         obj = VarItem()
-        O(t, col, obj, var_table, op_table)
+        obj.field = f_str
+        O(t, col, obj, var_table, op_table, f_str, errors)
 
 
-def L(t, col, item, c_table):
+def L(t, col, item, c_table, f_str, errors):
     """常量声明"""
     if not item:
         c_obj = ConstItem()
     else:
         c_obj = item
+    c_obj.field = f_str
     c_table.add_obj(c_obj)
     if t.Token[1] == 'const':
         match('const', t)
         M(t, col, c_obj, c_table)
-        N(t, col, c_obj, c_table)
+        N(t, col, c_obj, c_table, errors)
 
 
 def M(t, col, c_obj, c_table):
@@ -543,12 +538,13 @@ def M(t, col, c_obj, c_table):
         c_obj.type = 'float'
 
 
-def N(t, col, c_obj, c_table):
+def N(t, col, c_obj, c_table, errors):
     """常量声明表"""
     if t.Token[1] == 'signal':
         if c_table.search(t.Token[2]):
             c_obj.name = t.Token[2]
         else:
+            errors.append(f'常量重复声明错误,第{t.Token[3]}行')
             print(f'常量重复声明错误,第{t.Token[3]}行')
             c_table.pop()
         match('signal', t)
@@ -571,24 +567,25 @@ def N1(t, col, c_obj, c_table):
         N(t, col, next_cobj, c_table)
 
 
-def O(t, col, item, var_table, op_table):
+def O(t, col, item, var_table, op_table, f_str, errors):
     """变量声明"""
     if not item:
         obj = VarItem()
+        obj.field = f_str
     else:
         obj = item
     var_table.add_obj(obj)
     R(t, col, obj)
-    P(t, col, obj, var_table, op_table)
+    P(t, col, obj, var_table, op_table, f_str, errors)
 
 
-def P(t, col, item, var_table, op_table):
+def P(t, col, item, var_table, op_table, f_str, errors):
     """变量声明表"""
-    Q(t, col, item, var_table, op_table)
-    P1(t, col, item, var_table, op_table)
+    Q(t, col, item, var_table, op_table, errors)
+    P1(t, col, item, var_table, op_table, f_str, errors)
 
 
-def P1(t, col, item, var_table, op_table):
+def P1(t, col, item, var_table, op_table, f_str, errors):
     """变量声明表'"""
     if t.Token[1] == ';' or t.Token[1] == ";":
         match(';', t)
@@ -596,13 +593,14 @@ def P1(t, col, item, var_table, op_table):
         match(',', t)
         new_item = VarItem()
         new_item.type = item.type
+        new_item.field = f_str
         var_table.add_obj(new_item)
-        P(t, col, new_item, var_table, op_table)
+        P(t, col, new_item, var_table, op_table, f_str, errors)
 
 
-def Q(t, col, item, var_table, op_table):
+def Q(t, col, item, var_table, op_table, errors):
     """单变量声明"""
-    E(t, col, item, var_table, op_table)
+    E(t, col, item, var_table, op_table, node=None, errors=errors)
     Q1(t, col, item, var_table, op_table)
 
 
@@ -617,25 +615,28 @@ def R(t, col, item):
     """变量类型"""
     if t.Token[1] == 'int':
         match('int', t)
-        if isinstance(item, VarItem):
-            item.type = 'int'
-        else:
-            item.parLen += 1
-            item.para.append('int')
+        if item:
+            if isinstance(item, VarItem):
+                item.type = 'int'
+            else:
+                item.parLen += 1
+                item.para.append('int')
     elif t.Token[1] == 'char':
         match('char', t)
-        if isinstance(item, VarItem):
-            item.type = 'char'
-        else:
-            item.parLen += 1
-            item.para.append('char')
+        if item:
+            if isinstance(item, VarItem):
+                item.type = 'char'
+            else:
+                item.parLen += 1
+                item.para.append('char')
     elif t.Token[1] == 'float':
         match('float', t)
-        if isinstance(item, VarItem):
-            item.type = 'float'
-        else:
-            item.parLen += 1
-            item.para.append('float')
+        if item:
+            if isinstance(item, VarItem):
+                item.type = 'float'
+            else:
+                item.parLen += 1
+                item.para.append('float')
 
 
 def S(t, col, item, fun_table):
@@ -682,9 +683,9 @@ def V1(t, col, item, fun_table):
         V(t, col, item, fun_table)
 
 
-def W(t, col, item, var_table, op_table, node, chain):
+def W(t, col, item, var_table, op_table, node, chain, f_str, errors):
     """布尔表达式"""
-    X(t, col, item, var_table, op_table, node, chain)
+    X(t, col, item, var_table, op_table, node, chain, f_str, errors)
     W1(t, col, item, var_table, op_table, node, chain)
 
 
@@ -734,13 +735,13 @@ def W1(t, col, item, var_table, op_table, node, chain):
 
 
 
-def X(t, col, item, var_table, op_table, node, chain):
+def X(t, col, item, var_table, op_table, node, chain, f_str, errors):
     """布尔项"""
-    Y(t, col, item, var_table, op_table, node, chain)
-    X1(t, col, item, var_table, op_table, node, chain)
+    Y(t, col, item, var_table, op_table, node, chain, f_str, errors)
+    X1(t, col, item, var_table, op_table, node, chain, f_str, errors)
 
 
-def X1(t, col, item, var_table, op_table, node, chain):
+def X1(t, col, item, var_table, op_table, node, chain, f_str, errors):
     """布尔项'"""
     if t.Token[1] == '&&':
         # a||b&&c
@@ -783,16 +784,16 @@ def X1(t, col, item, var_table, op_table, node, chain):
                 chain.realChain.append(op_table.length)
         bool_lastmark[0] = '&&'
         match('&&', t)
-        X(t, col, item, var_table, op_table, node, chain)
+        X(t, col, item, var_table, op_table, node, chain, f_str, errors)
 
 
 
-def Y(t, col, item, var_table, op_table, node, chain):
+def Y(t, col, item, var_table, op_table, node, chain, f_str, errors):
     """布尔因子"""
     if t.Token[1] in col.firsts['arg_exp'] and conditon(t):
-        A(t, col, item, var_table, op_table, node, chain)
+        A(t, col, item, var_table, op_table, node, chain, f_str, errors)
     elif t.Token[1] in col.firsts['rel_expression']:
-        U_(t, col, item, var_table, op_table, node, chain)
+        U_(t, col, item, var_table, op_table, node, chain, f_str, errors)
         node[0] = node[1] = node[2] = ''
         # f_node = ['j', '', '', 0]
         # op_table.add_node(f_node)
@@ -803,7 +804,7 @@ def Y(t, col, item, var_table, op_table, node, chain):
 
 
 
-def Z(t, col, item, var_table, op_table):
+def Z(t, col, item, var_table, op_table, f_str, errors):
     """赋值表达式"""
     if t.Token[1] == 'signal':
         obj = t.Token[2]
@@ -815,11 +816,12 @@ def Z(t, col, item, var_table, op_table):
             # 赋值操作[=, ,T,signal] 需要A_返回值 , 传T的值
             # n = Node(c=temp)
             node = ['', '', '', temp]
-            A_(t, col, item, var_table, op_table, node)
+            A_(t, col, item, var_table, op_table, node, f_str=f_str, errors=errors)
             node = ['=', '', temp_obj.last, obj]
             # 赋值操作
             # 临时变量是否在符号表中 不在就添加到符号表
             if var_table.search(obj):
+                errors.append(f'变量未声明,第{t.Token[3]}行')
                 print(f'变量未声明,第{t.Token[3]}行')
             else:
                 pass
@@ -831,110 +833,127 @@ def Z(t, col, item, var_table, op_table):
             # 添加四元式
 
 
-def A_(t, col, item, var_table, op_table, node=None, chain=None):
+def A_(t, col, item, var_table, op_table, node=None, chain=None, f_str=None, errors=None):
     """表达式"""
     if t.Token[1] in col.firsts['arg_exp'] and conditon(t) and conditon1(t) and (t.tokens[t.p][1] != '=') and (t.tokens[t.p][2] != ')' or t.tokens[t.p-2][2] != '('):
         # 赋值操作[=, ,T ,signal] 添加四元式
-        A(t, col, item, var_table, op_table, node, chain)
+        A(t, col, item, var_table, op_table, node, chain, f_str, errors)
     elif t.Token[1] in col.firsts['rel_expression'] and (t.tokens[t.p][1] != '=' and conditon1(t) and (t.tokens[t.p][2] != ')' or t.tokens[t.p-2][2] != '(')):
         chain.reset(r_chain=True)
         temp = temp_obj.newtemp()
         node[3] = temp
         temp_obj.last = temp
-        U_(t, col, item, var_table, op_table, node, chain)
+        U_(t, col, item, var_table, op_table, node, chain, f_str, errors)
     elif t.Token[1] in col.firsts['bool_expression'] and (t.tokens[t.p][1] != '='):
         node[0] = 'jnz'
-        W(t, col, item, var_table, op_table, node, chain)
+        W(t, col, item, var_table, op_table, node, chain, f_str, errors)
     elif t.Token[1] in col.firsts['assign_expression']:
-        Z(t, col, item, var_table, op_table)
+        Z(t, col, item, var_table, op_table, f_str, errors)
 
 
-def B_(t, col, item, var_table, const_table, op_table):
+def B_(t, col, item, var_table, const_table, op_table, field, f_str, errors):
     """执行语句"""
     if t.Token[1] in col.firsts['digit_exe_statement']:
-        C_(t, col, item, var_table, op_table)
+        C_(t, col, item, var_table, op_table, f_str, errors)
     elif t.Token[1] in col.firsts['control_statement']:
-        F_(t, col, item, var_table, const_table, op_table)
+        F_(t, col, item, var_table, const_table, op_table, field, f_str, errors)
     elif t.Token[1] in col.firsts['complex_statement']:
-        G_(t, col, item, var_table, const_table, op_table)
+        G_(t, col, item, var_table, const_table, op_table, field, f_str)
         if cir_state[0] == 0 and (t.Token[1] == 'break' or t.Token[1] == 'continue'):
+            errors.append(f'出现错误,在非循环语句中使用break或者continue,第{t.Token[3]}行')
             print(f'出现错误,在非循环语句中使用break或者continue,第{t.Token[3]}行')
             exit(-1)
 
 
 
-def C_(t, col, item, var_table, op_table):
+def C_(t, col, item, var_table, op_table, f_str, errors):
     """数据处理语句"""
     if t.Token[1] in col.firsts['assign_statement'] and (t.tokens[t.p][1] != '('):
-        D_(t, col, item, var_table, op_table)
+        D_(t, col, item, var_table, op_table, f_str, errors)
     elif t.Token[1] in col.firsts['fun_invoke_statement']:
         E_(t, col, item, var_table, op_table)
 
 
-def D_(t, col, item, var_table, op_table):
+def D_(t, col, item, var_table, op_table, f_str, errors):
     """赋值语句"""
-    Z(t, col, item, var_table, op_table)
+    Z(t, col, item, var_table, op_table, f_str, errors)
     if t.Token[1] == ';':
         match(';', t)
 
 
-def E_(t, col):
+def E_(t, col, item, var_table, op_table):
     """函数调用语句"""
-    F(t, col)
+    F(t, col, item, var_table, op_table)
     if t.Token[1] == ';':
         match(';', t)
 
 
-def F_(t, col, item, var_table, const_table, op_table):
+def F_(t, col, item, var_table, const_table, op_table, field, f_str, errors):
     """控制语句"""
+    # 1/1/
+    f_str += str(field[0]) + '/'
+    field[0] += 1
+    new_field = [0]
     if t.Token[1] in col.firsts['if_statement']:
-        I_(t, col, item, var_table, const_table, op_table)
+        new_field[0] += 1
+        I_(t, col, item, var_table, const_table, op_table, new_field, f_str)
+        new_field[0] -= 1
         if cir_state[0] == 0 and (t.Token[1] == 'break' or t.Token[1] == 'continue'):
+            errors.append(f'出现错误,在非循环语句中使用break或者continue,第{t.Token[3]}行')
             print(f'出现错误,在非循环语句中使用break或者continue,第{t.Token[3]}行')
             exit(-1)
     elif t.Token[1] in col.firsts['for_statement']:
+        new_field[0] += 1
         cir_state[0] = 1
-        J_(t, col, item, var_table, const_table, op_table)
+        J_(t, col, item, var_table, const_table, op_table, new_field, f_str, errors)
+        new_field[0] -= 1
         cir_state[0] = 0
     elif t.Token[1] in col.firsts['while_statement']:
+        new_field[0] += 1
         cir_state[0] = 1
-        K_(t, col, item, var_table, const_table, op_table)
+        K_(t, col, item, var_table, const_table, op_table, new_field, f_str, errors)
+        new_field[0] -= 1
         cir_state[0] = 0
     elif t.Token[1] in col.firsts['do_while_statement']:
+        new_field[0] += 1
         cir_state[0] = 1
-        L_(t, col, item, var_table, const_table, op_table)
+        L_(t, col, item, var_table, const_table, op_table, new_field, f_str, errors)
+        new_field[0] -= 1
         cir_state[0] = 0
     elif t.Token[1] in col.firsts['return_statement']:
-        R_(t, col)
+        R_(t, col, item, var_table, const_table, op_table, f_str, errors)
 
 
 
-def G_(t, col, item, var_table, const_table, op_table):
+def G_(t, col, item, var_table, const_table, op_table, field, f_str, errors):
     """复合语句"""
+    # 1/
+    new_field = [1]
     if t.Token[1] == '{':
         match('{', t)
-        H_(t, col, item, var_table, const_table, op_table)
+        H_(t, col, item, var_table, const_table, op_table, new_field, f_str, errors)
         if t.Token[1] == '}':
             match('}', t)
         else:
             if cir_state[0] == 0 and (t.Token[1] == 'break' or t.Token[1] == 'continue'):
+                errors.append(f'出现错误,在非循环语句中使用break或者continue,第{t.Token[3]}行')
                 print(f'出现错误,在非循环语句中使用break或者continue,第{t.Token[3]}行')
                 exit(-1)
 
 
-def H_(t, col, item, var_table, const_table, op_table):
+def H_(t, col, item, var_table, const_table, op_table, field, f_str, errors):
     """语句表"""
-    I(t, col, item, var_table, const_table, op_table)
-    H_1(t, col, item, var_table, const_table, op_table)
+    I(t, col, item, var_table, const_table, op_table, field, f_str, errors)
+    H_1(t, col, item, var_table, const_table, op_table, field, f_str, errors)
 
 
-def H_1(t, col, item, var_table, const_table, op_table):
+def H_1(t, col, item, var_table, const_table, op_table, field, f_str, errors):
     """语句表'"""
     if t.Token[1] in col.firsts['statement_list']:
-        H_(t, col, item, var_table, const_table, op_table)
+        H_(t, col, item, var_table, const_table, op_table, field, f_str, errors)
 
 
-def I_(t, col, item, var_table, const_table, op_table):
+def I_(t, col, item, var_table, const_table, op_table, field, f_str):
     """if语句"""
     chain = ENTRY()
     if t.Token[1] == 'if':
@@ -980,7 +999,7 @@ def I_(t, col, item, var_table, const_table, op_table):
             if t.Token[1] == ')':
                 match(')', t)
                 chain.merge_real(op_table, op_table.length+1, True)
-                I(t, col, item, var_table, const_table, op_table)
+                I(t, col, item, var_table, const_table, op_table, field, f_str)
 
 
                 # 回填假出口
@@ -1001,7 +1020,7 @@ def I_1(t, col, item, var_table, const_table, op_table):
         I(t, col, item, var_table, const_table, op_table)
 
 
-def J_(t, col, item, var_table, const_table, op_table):
+def J_(t, col, item, var_table, const_table, op_table, field, f_str, errors):
     """for语句"""
     chain = ENTRY()
     entry = [0, 0]
@@ -1010,7 +1029,7 @@ def J_(t, col, item, var_table, const_table, op_table):
         if t.Token[1] == '(':
             match('(', t)
             node = ['', '', '', '']
-            A_(t, col, item, var_table, op_table, node, chain)
+            A_(t, col, item, var_table, op_table, node, chain, f_str=f_str, errors=errors)
             if t.Token[1] == ';':
                 match(';', t)
                 node = ['', '', '', 0]
@@ -1023,19 +1042,19 @@ def J_(t, col, item, var_table, const_table, op_table):
                     match(';', t)
                     node = ['', '', '', '']
                     entry[0] = op_table.length-1
-                    A_(t, col, item, var_table, op_table, node, chain)
+                    A_(t, col, item, var_table, op_table, node, chain, f_str=f_str, errors=errors)
                     entry[1] = op_table.length-1
                     op_table.add_node(['j', '', '', entry[0]])
 
                     if t.Token[1] == ')':
                         match(')', t)
                         chain.merge_real(op_table, op_table.length+1, True)
-                        M_(t, col, item, var_table, const_table, op_table, chain, op_table.length+1)
+                        M_(t, col, item, var_table, const_table, op_table, chain, op_table.length+1, field, f_str, errors)
                         op_table.add_node(['j', '', '', entry[1]])
                         chain.merge_fake(op_table, op_table.length+1)
 
 
-def K_(t, col, item, var_table, const_table, op_table):
+def K_(t, col, item, var_table, const_table, op_table, field, f_str, errors):
     """while语句"""
     chain = ENTRY()
     entry = [0]
@@ -1046,7 +1065,7 @@ def K_(t, col, item, var_table, const_table, op_table):
             node = ['', '', '', 0]
             entry[0] = op_table.length+1
             chain.realChain.append(op_table.length)
-            A_(t, col, item, var_table, op_table, node, chain)
+            A_(t, col, item, var_table, op_table, node, chain, f_str=f_str, errors=errors)
 
             # f_node = ['j', '', '', 0]
             # op_table.add_node(f_node)
@@ -1054,27 +1073,27 @@ def K_(t, col, item, var_table, const_table, op_table):
             if t.Token[1] == ')':
                 match(')', t)
                 chain.merge_real(op_table, op_table.length+1)
-                M_(t, col, item, var_table, const_table, op_table, chain, entry[0])
+                M_(t, col, item, var_table, const_table, op_table, chain, entry[0], field, f_str, errors)
                 chain.merge_fake(op_table, op_table.length+2)
                 op_table.add_node(['j', '', '', entry[0]])
                 entry[0] = 0
 
 
-def L_(t, col, item, var_table, const_table, op_table):
+def L_(t, col, item, var_table, const_table, op_table, field, f_str, errors):
     """dowhile语句"""
     chain = ENTRY()
     entry = [0]
     if t.Token[1] == 'do':
         match('do', t)
         entry[0] = op_table.length + 1
-        N_(t, col, item, var_table, const_table, op_table, chain, entry[0])
+        N_(t, col, item, var_table, const_table, op_table, chain, entry[0], field, f_str, errors)
         if t.Token[1] == 'while':
             match('while', t)
             if t.Token[1] == '(':
                 match('(', t)
                 node = ['', '', '', 0]
                 chain.realChain.append(op_table.length)
-                A_(t, col, item, var_table, op_table, node, chain)
+                A_(t, col, item, var_table, op_table, node, chain, errors=errors)
                 chain.merge_real(op_table, entry[0])
                 entry[0] = 0
                 chain.merge_fake(op_table, op_table.length+1)
@@ -1088,61 +1107,82 @@ def L_(t, col, item, var_table, const_table, op_table):
                         match(';', t)
 
 
-def M_(t, col, item, var_table, const_table, op_table, chain, continue_entry):
+def M_(t, col, item, var_table, const_table, op_table, chain, continue_entry, field, f_str, errors):
     """循环语句"""
     # 书上给的词法在循环语句中没有执行语句,在循环内的执行语句如赋值无法正确识别 ----
     # if t.Token[1] in col.firsts['exe_statement']:
     #     B_(t, col, item, var_table, const_table, op_table)
     if t.Token[1] in col.firsts['declare_statement']:
-        J(t, col)
+        J(t, col, item, var_table, const_table, op_table, f_str, errors)
     elif t.Token[1] in col.firsts['cir_exe_statement']:
-        P_(t, col, item, var_table, const_table, op_table, chain, continue_entry)
+        P_(t, col, item, var_table, const_table, op_table, chain, continue_entry, field, f_str, errors)
     elif t.Token[1] in col.firsts['cir_complex_statement']:
-        N_(t, col, item, var_table, const_table, op_table, chain, continue_entry)
+        N_(t, col, item, var_table, const_table, op_table, chain, continue_entry, field, f_str, errors)
 
 
-def N_(t, col, item, var_table, const_table, op_table, chain, continue_entry):
+def N_(t, col, item, var_table, const_table, op_table, chain, continue_entry, field, f_str, errors):
     """循环用复合语句"""
     if t.Token[1] == '{':
         match('{', t)
-        O_(t, col, item, var_table, const_table, op_table, chain, continue_entry)
+        O_(t, col, item, var_table, const_table, op_table, chain, continue_entry, field, f_str, errors)
         if t.Token[1] == '}':
             match('}', t)
 
 
-def O_(t, col, item, var_table, const_table, op_table, chain, continue_entry):
+def O_(t, col, item, var_table, const_table, op_table, chain, continue_entry, field, f_str, errors):
     """循环语句表"""
-    M_(t, col, item, var_table, const_table, op_table, chain, continue_entry)
-    O_1(t, col, item, var_table, const_table, op_table, chain, continue_entry)
+    M_(t, col, item, var_table, const_table, op_table, chain, continue_entry, field, f_str, errors)
+    O_1(t, col, item, var_table, const_table, op_table, chain, continue_entry, field, f_str, errors)
 
 
-def O_1(t, col, item, var_table, const_table, op_table, chain, continue_entry):
+def O_1(t, col, item, var_table, const_table, op_table, chain, continue_entry, field, f_str, errors):
     """循环语句表'"""
     if t.Token[1] in col.firsts['cir_statement_list']:
-        O_(t, col, item, var_table, const_table, op_table, chain, continue_entry)
+        O_(t, col, item, var_table, const_table, op_table, chain, continue_entry, field, f_str, errors)
 
 
-def P_(t, col, item, var_table, const_table, op_table, chain, continue_entry):
+def P_(t, col, item, var_table, const_table, op_table, chain, continue_entry, field, f_str, errors):
     """循环执行语句"""
+
     if t.Token[1] in col.firsts['digit_exe_statement']:
-        C_(t, col, item, var_table, op_table)
+        C_(t, col, item, var_table, op_table, f_str, errors)
     elif t.Token[1] in col.firsts['cir_if_statement']:
-        Q_(t, col, item, var_table, const_table, op_table, chain, continue_entry)
+        f_str += str(field[0]) + '/'
+        field[0] += 1
+        new_field = [0]
+        new_field[0] += 1
+        Q_(t, col, item, var_table, const_table, op_table, chain, continue_entry, new_field, f_str, errors)
+        new_field[0] -= 1
     elif t.Token[1] in col.firsts['for_statement']:
-        J_(t, col)
+        f_str += str(field[0]) + '/'
+        field[0] += 1
+        new_field = [0]
+        new_field[0] += 1
+        J_(t, col, item, var_table, const_table, op_table, new_field, f_str, errors)
+        new_field[0] -= 1
     elif t.Token[1] in col.firsts['while_statement']:
-        K_(t, col)
+        f_str += str(field[0]) + '/'
+        field[0] += 1
+        new_field = [0]
+        new_field[0] += 1
+        K_(t, col, item, var_table, const_table, op_table, new_field, f_str, errors)
+        new_field[0] -= 1
     elif t.Token[1] in col.firsts['do_while_statement']:
-        L_(t, col)
+        f_str += str(field[0]) + '/'
+        field[0] += 1
+        new_field = [0]
+        new_field[0] += 1
+        L_(t, col, item, var_table, const_table, op_table, new_field, f_str, errors)
+        new_field[0] -= 1
     elif t.Token[1] in col.firsts['return_statement']:
-        R_(t, col)
+        R_(t, col, item, var_table, const_table, op_table)
     elif t.Token[1] in col.firsts['break_statement']:
         S_(t, col, op_table, chain)
     elif t.Token[1] in col.firsts['continue_statement']:
         T_(t, col, op_table, continue_entry)
 
 
-def Q_(t, col, item, var_table, const_table, op_table, for_chain, continue_entry):
+def Q_(t, col, item, var_table, const_table, op_table, for_chain, continue_entry, field, f_str, errors):
     """循环用if语句"""
     chain = ENTRY()
     if t.Token[1] == 'if':
@@ -1151,7 +1191,7 @@ def Q_(t, col, item, var_table, const_table, op_table, for_chain, continue_entry
             match('(', t)
             node = ['', '', '', 0]
             chain.realChain.append(op_table.length)
-            A_(t, col, item, var_table, op_table, node, chain)
+            A_(t, col, item, var_table, op_table, node, chain, f_str=f_str, errors=errors)
             # if entry_offset[0] != 0:
             #     chain.realChain[-1] = entry_offset[0]
             #     # print(entry_offset[0])
@@ -1189,38 +1229,44 @@ def Q_(t, col, item, var_table, const_table, op_table, for_chain, continue_entry
             if t.Token[1] == ')':
                 match(')', t)
                 chain.merge_real(op_table, op_table.length + 1, True)
-                M_(t, col, item, var_table, const_table, op_table, for_chain, continue_entry)
+
+                M_(t, col, item, var_table, const_table, op_table, for_chain, continue_entry, field, f_str, errors)
                 # 回填假出口
                 chain.merge_fake(op_table, op_table.length + 2)
                 chain.reset(f_chain=True)
                 op_table.add_node(['j', '', '', 0])
                 chain.fakeChain.append(op_table.length - 1)
 
-                Q_1(t, col, item, var_table, const_table, op_table, chain, continue_entry)
+                Q_1(t, col, item, var_table, const_table, op_table, chain, continue_entry, field, f_str, errors)
                 chain.merge_fake(op_table, op_table.length + 1)
 
 
 
-def Q_1(t, col, item, var_table, const_table, op_table, chain, continue_entry):
+def Q_1(t, col, item, var_table, const_table, op_table, chain, continue_entry, field, f_str, errors):
     """循环用if语句'"""
     if t.Token[1] == 'else':
         match('else', t)
-        M_(t, col, item, var_table, const_table, op_table, chain, continue_entry)
+        print(f_str)
+        M_(t, col, item, var_table, const_table, op_table, chain, continue_entry, field, f_str, errors)
 
 
-def R_(t, col):
+def R_(t, col, item, var_table, const_table, op_table, f_str, errors):
     """return语句"""
     if t.Token[1] == 'return':
         match('return', t)
-        R_1(t, col)
+        R_1(t, col, item, var_table, op_table, f_str, errors)
 
 
-def R_1(t, col):
+def R_1(t, col, item, var_table, op_table, f_str, errors):
     """return语句"""
     if t.Token[1] == ';':
         match('return', t)
+        op_table.add_node(['ret', '', '', ''])
     elif t.Token[1] in col.firsts['expression']:
-        A_(t, col)
+        temp = temp_obj.newtemp()
+        node = ['', '', '', temp]
+        A_(t, col, item, var_table, op_table, node, f_str=f_str, errors=errors)
+        op_table.add_node(['ret', '', '', temp_obj.last])
         if t.Token[1] == ';':
             match(';', t)
 
@@ -1247,9 +1293,9 @@ def T_(t, col, op_table, continue_entry):
 
 
 
-def U_(t, col, item, var_table, op_table, node, chain):
+def U_(t, col, item, var_table, op_table, node, chain, f_str, errors):
     """关系表达式"""
-    A(t, col, item, var_table, op_table, node, chain)
+    A(t, col, item, var_table, op_table, node, chain, f_str, errors)
     if node[0] and node[1] and node[2] and node[3]:
         n_t = node[3]
         op_table.add_node(node[:])
@@ -1277,7 +1323,7 @@ def U_(t, col, item, var_table, op_table, node, chain):
         const_index = 2
         arg_or_con = node[:]
         node = ['', '', '', temp]
-    A(t, col, item, var_table, op_table, node, chain)
+    A(t, col, item, var_table, op_table, node, chain, f_str, errors)
     if not node[1] and not node[2]:
         chain.merge_real(op_table, op_table.length + 1, True)
         chain.realChain.append(op_table.length)
@@ -1334,40 +1380,45 @@ def V_(t, col, item, var_table, op_table, node):
 
 
 
-def W_(t, col):
+def W_(t, col, item, var_table, const_table, op_table, field, f_str, errors):
     """函数定义"""
     T(t, col)
     if t.Token[1] == 'signal':
+        op_table.add_node([t.Token[2], '', '', ''])
         match('signal', t)
         if t.Token[1] == '(':
             match('(', t)
-            X_(t, col)
+            X_(t, col, item, var_table, const_table, op_table, f_str)
             if t.Token[1] == ')':
                 match(')', t)
-                G_(t, col)
+                G_(t, col, item, var_table, const_table, op_table, field, f_str, errors)
 
 
 
-def X_(t, col):
+def X_(t, col, item, var_table, const_table, op_table, f_str):
     """函数定义形参列表"""
     if t.Token[1] in col.firsts['fun_define_fpar']:
-        Y_(t, col)
+        Y_(t, col, item, var_table, const_table, op_table, f_str)
 
 
 
-def Y_(t, col):
+def Y_(t, col, item, var_table, const_table, op_table, f_str):
     """函数定义形参"""
-    R(t, col)
+    item = VarItem()
+    var_table.add_obj(item)
+    R(t, col, item)
     if t.Token[1] == 'signal':
+        item.name = t.Token[2]
+        item.field = f_str
         match('signal', t)
-        Y_1(t, col)
+        Y_1(t, col, item, var_table, const_table, op_table, f_str)
 
 
-def Y_1(t, col):
+def Y_1(t, col, item, var_table, const_table, op_table, f_str):
     """函数定义形参'"""
     if t.Token[1] == ',':
         match(',', t)
-        Y_(t, col)
+        Y_(t, col, item, var_table, const_table, op_table, f_str)
 
 
 def Z_(t, col):

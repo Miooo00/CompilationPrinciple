@@ -1,8 +1,3 @@
-class Tables:
-    def __init__(self):
-        self.entry = 1
-        self.name = ''
-
 
 class FunctionItem:
     def __init__(self):
@@ -13,22 +8,31 @@ class FunctionItem:
         self.para = []
 
     def items_print(self):
-        print(self.entry, self.name, self.type, self.parLen, self.para)
+        print(self.entry, self.name, self.type, self.parLen, self.para, sep='\t\t   ')
 
+    def to_string(self):
+        res_str = str(self.entry) + ' ' + self.name + ' ' + self.type + ' ' + str(self.parLen) + ' '
+        for par in self.para:
+            res_str += par + ' '
+        res_str += '\n'
+        return res_str
 
 class VarItem:
-    def __init__(self, name='', type='', val=''):
+    def __init__(self, name='null', type='null', val='null'):
         self.entry = 1
         self.name = name
         self.type = type
         self.val = val
+        self.field = ''
 
     def items_print(self):
-        print(self.entry, self.name, self.type, self.val)
+        print(self.entry, self.name, self.type, self.val, self.field, sep='\t\t   ')
 
-    def format_output(self):
-        print("------------------------------------------")
-        print("index\tname\ttype\tval\t")
+    def to_string(self):
+        res_str = str(self.entry) + ' ' + self.name + ' ' + self.type + ' ' + self.val + ' ' + self.field
+        res_str += '\n'
+        return res_str
+
 
 
 class ConstItem:
@@ -37,9 +41,15 @@ class ConstItem:
         self.name = ''
         self.type = ''
         self.val = ''
+        self.field = ''
 
     def items_print(self):
-        print(self.entry, self.name, self.type, self.val)
+        print(self.entry, self.name, self.type, self.val, self.field, sep='\t\t   ')
+
+    def to_string(self):
+        res_str = str(self.entry) + ' ' + self.name + ' ' + self.type + ' ' + self.val + ' ' + self.field
+        res_str += '\n'
+        return res_str
 
 
 
@@ -64,6 +74,23 @@ class Table:
                 if item.name == name:
                     return item.val
         return 114514
+
+    def search_in_field(self, name, cur_field):
+        if self.flag == 'C':
+            for item in self.table:
+                if item.name == name and (item.field == '<all>' or cur_field.startswith(item.field)):
+                    return True
+            return False
+        elif self.flag == 'V':
+            for item in self.table:
+                if item.name == name and (item.field == '<all>' or cur_field.startswith(item.field)):
+                    return True
+            return False
+        elif self.flag == 'F':
+            for item in self.table:
+                if item.name == name and (item.field == '<all>' or cur_field.startswith(item.field)):
+                    return True
+            return False
 
     def search(self, name):
         if self.flag == 'C':
@@ -131,13 +158,16 @@ class OPCODE:
 
     def show(self):
         index = 1
+        res = ''
         for item in self.list:
-            line = str(index)+':'+'\t' + '('
+            line = str(index)+':' + '('
             for i in item:
-                line += str(i) + ',' + '\t'
+                line += str(i) + ','
             line = line +')'
             print(line)
+            res += line + '\n'
             index += 1
+        return res
 
 
 class ENTRY:

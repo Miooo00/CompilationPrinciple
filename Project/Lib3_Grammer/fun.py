@@ -54,7 +54,7 @@ def conditon(t):
     p = t.p
     simbol = ['>', '<', '>=', '<=', '==', '!=']
     wrong = t.tokens[p][3]
-    while p < len(t.tokens) and t.tokens[p][1] != ';':
+    while p < len(t.tokens) and t.tokens[p][1] != ';' and (t.tokens[p][1] not in ['&&', '||']):
         if wrong != t.tokens[p][3]:
             break
         if t.tokens[p][1] in simbol:
@@ -1553,15 +1553,7 @@ def M_(t, col, parent, tree, errors):
     # if t.Token[1] in col.firsts['exe_statement']:
     #     B_(t, col, parent, tree, errors)
     # 新增2个文法右部
-    if t.Token[1] in col.firsts['digit_exe_statement']:
-        sub1 = Node('digit_exe_statement')
-        tree.add_node(sub1, parent)
-        C_(t, col, sub1, tree, errors)
-    elif t.Token[1] in col.firsts['fun_invoke_statement']:
-        sub2 = Node('fun_invoke_statement')
-        tree.add_node(sub2, parent)
-        E_(t, col, sub2, tree, errors)
-    elif t.Token[1] in col.firsts['declare_statement']:
+    if t.Token[1] in col.firsts['declare_statement']:
         sub3 = Node('declare_statement')
         tree.add_node(sub3, parent)
         J(t, col, sub3, tree, errors)
@@ -1611,7 +1603,11 @@ def O_1(t, col, parent, tree, errors):
 
 def P_(t, col, parent, tree, errors):
     """循环执行语句"""
-    if t.Token[1] in col.firsts['cir_if_statement']:
+    if t.Token[1] in col.firsts['digit_exe_statement']:
+        sub = Node('digit_exe_statement')
+        tree.add_node(sub, parent)
+        C_(t, col, sub, tree, errors)
+    elif t.Token[1] in col.firsts['cir_if_statement']:
         sub1 = Node('cir_if_statement')
         tree.add_node(sub1, parent)
         Q_(t, col, sub1, tree, errors)
