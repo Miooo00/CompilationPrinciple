@@ -45,7 +45,7 @@
     <property name="font">
      <font>
       <family>Adobe Fangsong Std</family>
-      <pointsize>5</pointsize>
+      <pointsize>7</pointsize>
       <weight>50</weight>
       <bold>false</bold>
      </font>
@@ -134,7 +134,7 @@
      <x>0</x>
      <y>0</y>
      <width>584</width>
-     <height>22</height>
+     <height>18</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">

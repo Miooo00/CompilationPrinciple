@@ -115,7 +115,7 @@ def entry(content, regulation, start='program'):
         i.items_print()
 
     op_table.show()
-
+    print(errors)
     return const_table, var_table, fun_table, op_table, errors
 
 

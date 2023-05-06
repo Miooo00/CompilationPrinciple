@@ -18,12 +18,12 @@ class FunctionItem:
         return res_str
 
 class VarItem:
-    def __init__(self, name='null', type='null', val='null'):
+    def __init__(self, name='null', type='null', val='null', field='null'):
         self.entry = 1
         self.name = name
         self.type = type
         self.val = val
-        self.field = ''
+        self.field = field
 
     def items_print(self):
         print(self.entry, self.name, self.type, self.val, self.field, sep='\t\t   ')

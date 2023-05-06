@@ -183,7 +183,7 @@ def A(t, col, item, var_table, op_table, node, chain, f_str, errors):
             op_table.add_node(node[:])
             if chain:
                 chain.merge_real(op_table, op_table.length)
-            var_table.add_obj(VarItem(name=node[3]))
+            var_table.add_obj(VarItem(name=node[3], field=f_str))
             temp_obj.last = node[3]
             node[0] = node[1] = node[2] = node[3] = ''
         elif node[0] and node[1] and node[2] and node[3]:
@@ -205,7 +205,7 @@ def A(t, col, item, var_table, op_table, node, chain, f_str, errors):
             node[0] = node[1] = node[3] = ''
             node[2] = t_var
             node[3] = temp_obj.newtemp()
-            var_table.add_obj(VarItem(name=node[3]))
+            var_table.add_obj(VarItem(name=node[3], field=f_str))
             temp_obj.last = node[3]
         elif node[0] == 'para':
             if node[1]:
@@ -255,12 +255,12 @@ def B(t, col, item, var_table, op_table, node, chain, f_str, errors):
                     errors.append(f'变量或常量未声明,第{t.Token[3]}行')
                     print(f'变量或常量未声明,第{t.Token[3]}行')
             if node[0] == '/' and int(node[2]) == 0:
+                errors.append(f'出现错误,除数为0,第{t.Token[3]}行')
                 print(f'出现错误,除数为0,第{t.Token[3]}行')
-                exit()
             op_table.add_node(node[:])
             if chain:
                 chain.merge_real(op_table, op_table.length)
-            var_table.add_obj(VarItem(name=node[3]))
+            var_table.add_obj(VarItem(name=node[3], field=f_str))
             temp_obj.last = node[3]
             node[0] = node[1] = node[2] = node[3] = ''
         elif node[0] and node[1] and node[2] and node[3]:
@@ -282,7 +282,7 @@ def B(t, col, item, var_table, op_table, node, chain, f_str, errors):
             op_table.add_node(node[:])
             if chain:
                 chain.merge_real(op_table, op_table.length)
-            var_table.add_obj(VarItem(name=node[3]))
+            var_table.add_obj(VarItem(name=node[3], field=f_str))
             t_var = node[3]
             node[0] = node[1] = node[3] = ''
             node[2] = t_var
@@ -311,14 +311,14 @@ def B1(t, col, item, var_table, op_table, node, chain, f_str, errors):
             op_table.add_node(node[:])
             if chain:
                 chain.merge_real(op_table, op_table.length)
-            var_table.add_obj(VarItem(name=node[3]))
+            var_table.add_obj(VarItem(name=node[3], field=f_str))
             t_var = node[3]
             node[0] = node[1] = node[2] = node[3] = ''
             node[2] = t_var
             node[3] = temp_obj.newtemp()
         node[0] = '*'
         match('*', t)
-        B(t, col, item, var_table, op_table, node, chain)
+        B(t, col, item, var_table, op_table, node, chain, f_str, errors)
     elif t.Token[1] == '/':
         if node[0] and node[1] and node[2] and node[3]:
             if not node[1].isdigit():
@@ -339,14 +339,14 @@ def B1(t, col, item, var_table, op_table, node, chain, f_str, errors):
             op_table.add_node(node[:])
             if chain:
                 chain.merge_real(op_table, op_table.length)
-            var_table.add_obj(VarItem(name=node[3]))
+            var_table.add_obj(VarItem(name=node[3], field=f_str))
             t_var = node[3]
             node[0] = node[1] = node[2] = node[3] = ''
             node[2] = t_var
             node[3] = temp_obj.newtemp()
         node[0] = '/'
         match('/', t)
-        B(t, col, item, var_table, op_table, node, chain)
+        B(t, col, item, var_table, op_table, node, chain, f_str, errors)
     elif t.Token[1] == '%':
         if node[0] and node[1] and node[2] and node[3]:
             if not node[1].isdigit():
@@ -365,7 +365,7 @@ def B1(t, col, item, var_table, op_table, node, chain, f_str, errors):
             op_table.add_node(node[:])
             if chain:
                 chain.merge_real(op_table, op_table.length)
-            var_table.add_obj(VarItem(name=node[3]))
+            var_table.add_obj(VarItem(name=node[3], field=f_str))
             t_var = node[3]
             node[0] = node[1] = node[2] = node[3] = ''
             node[2] = t_var
@@ -601,14 +601,14 @@ def P1(t, col, item, var_table, op_table, f_str, errors):
 def Q(t, col, item, var_table, op_table, errors):
     """单变量声明"""
     E(t, col, item, var_table, op_table, node=None, errors=errors)
-    Q1(t, col, item, var_table, op_table)
+    Q1(t, col, item, var_table, op_table, errors)
 
 
-def Q1(t, col, item, var_table, op_table):
+def Q1(t, col, item, var_table, op_table, errors):
     """单变量声明'"""
     if t.Token[1] == '=':
         match('=', t)
-        A_(t, col, item, var_table, op_table)
+        A_(t, col, item, var_table, op_table, errors=errors)
 
 
 def R(t, col, item):
@@ -686,10 +686,10 @@ def V1(t, col, item, fun_table):
 def W(t, col, item, var_table, op_table, node, chain, f_str, errors):
     """布尔表达式"""
     X(t, col, item, var_table, op_table, node, chain, f_str, errors)
-    W1(t, col, item, var_table, op_table, node, chain)
+    W1(t, col, item, var_table, op_table, node, chain, f_str, errors)
 
 
-def W1(t, col, item, var_table, op_table, node, chain):
+def W1(t, col, item, var_table, op_table, node, chain, f_str, errors):
     """布尔表达式'"""
     if t.Token[1] == '||':
         # a&&b||c
@@ -731,7 +731,7 @@ def W1(t, col, item, var_table, op_table, node, chain):
                 chain.realChain.append(op_table.length)
         bool_lastmark[0] = '||'
         match('||', t)
-        W(t, col, item, var_table, op_table, node, chain)
+        W(t, col, item, var_table, op_table, node, chain, f_str, errors)
 
 
 
@@ -1034,7 +1034,7 @@ def J_(t, col, item, var_table, const_table, op_table, field, f_str, errors):
                 match(';', t)
                 node = ['', '', '', 0]
                 chain.realChain.append(op_table.length)
-                A_(t, col, item, var_table, op_table, node, chain)
+                A_(t, col, item, var_table, op_table, node, chain, f_str=f_str, errors=errors)
                 # f_node = ['j', '', '', 0]
                 # op_table.add_node(f_node)
                 # chain.fakeChain.append(op_table.length - 1)
