@@ -109,6 +109,21 @@ class Table:
                     return False
             return True
 
+    def get(self, name):
+        if self.flag == 'C':
+            for item in self.table:
+                if item.name == name:
+                    return item
+        elif self.flag == 'V':
+            for item in self.table:
+                if item.name == name:
+                    return item
+        elif self.flag == 'F':
+            for item in self.table:
+                if item.name == name:
+                    return item
+        return None
+
     def update(self, name, val):
         if self.flag == 'C':
             for item in self.table:

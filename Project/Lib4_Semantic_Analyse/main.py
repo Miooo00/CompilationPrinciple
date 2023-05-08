@@ -59,7 +59,7 @@ def entry(content, regulation, start='program'):
     col.GET_FIRST_FOLLOW()
 
     tokenbox.get_next_token()
-    op_table.add_node(['main', '', '', ''])
+    # op_table.add_node(['main', '', '', ''])
     while tokenbox.Token[1] != 'main':
         if tokenbox.Token[1] == 'const':
             # 常量声明
@@ -103,7 +103,7 @@ def entry(content, regulation, start='program'):
         field[0] += 1
         f_str = f'{field[0]}/'
         W_(tokenbox, col, None, var_table, const_table, op_table, field, f_str, errors)
-    op_table.add_node(['sys', '', '', ''])
+    # op_table.add_node(['sys', '', '', ''])
     print('CONST TABLE:')
     for i in const_table.table:
         i.items_print()

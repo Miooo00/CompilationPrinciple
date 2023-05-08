@@ -372,7 +372,7 @@ def B1(t, col, item, var_table, op_table, node, chain, f_str, errors):
             node[3] = temp_obj.newtemp()
         node[0] = '%'
         match('%', t)
-        B(t, col, item, var_table, op_table, node)
+        B(t, col, item, var_table, op_table, node, chain, f_str, errors)
 
 
 def C(t, col, item, var_table, op_table, node, chain, f_str, errors):
@@ -399,7 +399,8 @@ def C(t, col, item, var_table, op_table, node, chain, f_str, errors):
         # 变量 new = [, , var,T]
         E(t, col, item, var_table, op_table, node, errors)
     elif t.Token[1] in col.firsts['fun_invoke']:
-        F(t, col, item, var_table, op_table)
+        temp_obj.last = 'AX'
+        F(t, col, item, var_table, op_table, f_str, errors)
 
 
 def D(t, col, item=None, table=None, op_table=None, node=None):
@@ -446,40 +447,41 @@ def E(t, col, item, var_table, op_table, node, errors):
         match('signal', t)
 
 
-def F(t, col, item, var_table, op_table):
+def F(t, col, item, var_table, op_table, f_str, errors):
     """函数调用"""
     if t.Token[1] == 'signal':
         func_name = t.Token[2]
         match('signal', t)
         if t.Token[1] == '(':
             match('(', t)
-            G(t, col, item, var_table, op_table)
+            G(t, col, item, var_table, op_table, f_str, errors)
             if t.Token[1] == ')':
                 match(')', t)
                 op_table.add_node(['call', func_name, '', ''])
 
 
-def G(t, col, item, var_table, op_table):
+def G(t, col, item, var_table, op_table, f_str, errors):
     """实参列表"""
     if t.Token[1] in col.firsts['real_par']:
-        H(t, col, item, var_table, op_table)
+        H(t, col, item, var_table, op_table, f_str, errors)
 
 
-def H(t, col, item, var_table, op_table):
+def H(t, col, item, var_table, op_table, f_str, errors):
     """实参"""
 
     temp = temp_obj.newtemp()
     node = ['', '', '', temp]
-    A_(t, col, item, var_table, op_table, node)
+    A_(t, col, item, var_table, op_table, node, f_str=f_str, errors=errors)
     op_table.add_node(['para', temp_obj.last, '', '', ])
-    H1(t, col, item, var_table, op_table)
+    temp_obj.last = 'AX'
+    H1(t, col, item, var_table, op_table, f_str, errors)
 
 
-def H1(t, col, item, var_table, op_table):
+def H1(t, col, item, var_table, op_table, f_str, errors):
     """ 实参' """
     if t.Token[1] == ',':
         match(',', t)
-        H(t, col, item, var_table, op_table)
+        H(t, col, item, var_table, op_table, f_str, errors)
 
 
 def I(t, col, item, var_table, const_table, op_table, field, f_str, errors):
@@ -858,7 +860,7 @@ def B_(t, col, item, var_table, const_table, op_table, field, f_str, errors):
     elif t.Token[1] in col.firsts['control_statement']:
         F_(t, col, item, var_table, const_table, op_table, field, f_str, errors)
     elif t.Token[1] in col.firsts['complex_statement']:
-        G_(t, col, item, var_table, const_table, op_table, field, f_str)
+        G_(t, col, item, var_table, const_table, op_table, field, f_str, errors)
         if cir_state[0] == 0 and (t.Token[1] == 'break' or t.Token[1] == 'continue'):
             errors.append(f'出现错误,在非循环语句中使用break或者continue,第{t.Token[3]}行')
             print(f'出现错误,在非循环语句中使用break或者continue,第{t.Token[3]}行')
@@ -871,7 +873,7 @@ def C_(t, col, item, var_table, op_table, f_str, errors):
     if t.Token[1] in col.firsts['assign_statement'] and (t.tokens[t.p][1] != '('):
         D_(t, col, item, var_table, op_table, f_str, errors)
     elif t.Token[1] in col.firsts['fun_invoke_statement']:
-        E_(t, col, item, var_table, op_table)
+        E_(t, col, item, var_table, op_table, f_str, errors)
 
 
 def D_(t, col, item, var_table, op_table, f_str, errors):
@@ -881,9 +883,9 @@ def D_(t, col, item, var_table, op_table, f_str, errors):
         match(';', t)
 
 
-def E_(t, col, item, var_table, op_table):
+def E_(t, col, item, var_table, op_table, f_str, errors):
     """函数调用语句"""
-    F(t, col, item, var_table, op_table)
+    F(t, col, item, var_table, op_table, f_str, errors)
     if t.Token[1] == ';':
         match(';', t)
 
@@ -896,7 +898,7 @@ def F_(t, col, item, var_table, const_table, op_table, field, f_str, errors):
     new_field = [0]
     if t.Token[1] in col.firsts['if_statement']:
         new_field[0] += 1
-        I_(t, col, item, var_table, const_table, op_table, new_field, f_str)
+        I_(t, col, item, var_table, const_table, op_table, new_field, f_str, errors)
         new_field[0] -= 1
         if cir_state[0] == 0 and (t.Token[1] == 'break' or t.Token[1] == 'continue'):
             errors.append(f'出现错误,在非循环语句中使用break或者continue,第{t.Token[3]}行')
@@ -953,7 +955,7 @@ def H_1(t, col, item, var_table, const_table, op_table, field, f_str, errors):
         H_(t, col, item, var_table, const_table, op_table, field, f_str, errors)
 
 
-def I_(t, col, item, var_table, const_table, op_table, field, f_str):
+def I_(t, col, item, var_table, const_table, op_table, field, f_str, errors):
     """if语句"""
     chain = ENTRY()
     if t.Token[1] == 'if':
@@ -999,7 +1001,7 @@ def I_(t, col, item, var_table, const_table, op_table, field, f_str):
             if t.Token[1] == ')':
                 match(')', t)
                 chain.merge_real(op_table, op_table.length+1, True)
-                I(t, col, item, var_table, const_table, op_table, field, f_str)
+                I(t, col, item, var_table, const_table, op_table, field, f_str, errors)
 
 
                 # 回填假出口
@@ -1009,15 +1011,15 @@ def I_(t, col, item, var_table, const_table, op_table, field, f_str):
                 chain.fakeChain.append(op_table.length - 1)
 
 
-                I_1(t, col, item, var_table, const_table, op_table)
+                I_1(t, col, item, var_table, const_table, op_table, field, f_str, errors)
                 chain.merge_fake(op_table, op_table.length+1)
 
 
-def I_1(t, col, item, var_table, const_table, op_table):
+def I_1(t, col, item, var_table, const_table, op_table, field, f_str, errors):
     """if语句'"""
     if t.Token[1] == 'else':
         match('else', t)
-        I(t, col, item, var_table, const_table, op_table)
+        I(t, col, item, var_table, const_table, op_table, field, f_str, errors)
 
 
 def J_(t, col, item, var_table, const_table, op_table, field, f_str, errors):

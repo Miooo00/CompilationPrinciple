@@ -1,0 +1,20 @@
+{
+  "+": "\tMOV AX,{A}\n\tADD AX,{B}\n\tMOV {T},AX",
+  "-": "\tMOV AX,{A}\n\tSUB AX,{B}\n\tMOV {T},AX",
+  "*": "\tMOV AX,{A}\n\tMOV BX,{B}\n\tMUL BX\n\tMOV {T},AX",
+  "/": "\tMOV AX,{A}\n\tMOV DX,0\n\tMOV BX,{B}\n\tDIV BX\n\tMOV {T},AX",
+  "%": "\tMOV AX,{A}\n\tMOV DX,0\n\tMOV BX,{B}\n\tDIV BX\n\tMOV {T},DX",
+  "=": "\tMOV AX,{B}\n\tMOV {T},AX",
+  "<": "\tMOV AX,{A}\n\tCMP AX,{B}\n\tJB _LT\n\tJMP far ptr {P}\n\t_LT:JMP far ptr {P1}",
+  ">=": "\tMOV AX,{A}\n\tCMP AX,{B}\n\tJNB _GE\n\tJMP far ptr {P}\n\t_GE:JMP far ptr {P1}",
+  ">": "\tMOV AX,{A}\n\tCMP AX,{B}\n\tJA _GT\n\tJMP far ptr {P}\n\t_GT:JMP far ptr {P1}",
+  "<=": "\tMOV AX,{A}\n\tCMP AX,{B}\n\tJNA _LE\n\tJMP far ptr {P}\n\t_LE:JMP far ptr {P1}",
+  "==": "\tMOV AX,{A}\n\tCMP AX,{B}\n\tJE _EQ\n\tJMP far ptr {P}\n\t_EQ:JMP far ptr {P1}",
+  "j": "\tJMP far ptr {P1}",
+  "jnz": "\tMOV AX,{A}\n\tCMP AX,0\n\tJE _EZ\n\tJMP far ptr {P1}\n\t_EZ: NOP",
+  "para": "\tMOV AX,{A}\n\tPUSH AX",
+  "call": "\tCALL {A}",
+  "ret": "\t{A}\n\tMOV SP,BP\n\tPOP BP\n\tRET",
+  "fun": "\tPUSH BP\n\tMOV BP,SP\n{EX}\n\tPOP BP\n\tRET"
+
+}
