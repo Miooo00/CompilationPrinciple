@@ -1,6 +1,6 @@
 int a = 1 ;
-
-int sum(int x, int y);
+int sum_x,sum_y;
+int sum(int sum_x, int sum_y);
 
 main(){
 

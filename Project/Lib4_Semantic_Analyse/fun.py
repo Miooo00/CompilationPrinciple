@@ -202,7 +202,7 @@ def A(t, col, item, var_table, op_table, node, chain, f_str, errors):
             op_table.add_node(node[:])
             chain.merge_real(op_table, op_table.length)
             t_var = node[3]
-            node[0] = node[1] = node[3] = ''
+            node[0] = node[1] = node[2] = node[3] = ''
             node[2] = t_var
             node[3] = temp_obj.newtemp()
             var_table.add_obj(VarItem(name=node[3], field=f_str))

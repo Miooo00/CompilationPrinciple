@@ -44,8 +44,8 @@
     </property>
     <property name="font">
      <font>
-      <family>Adobe Fangsong Std</family>
-      <pointsize>7</pointsize>
+      <family>Adobe 宋体 Std L</family>
+      <pointsize>8</pointsize>
       <weight>50</weight>
       <bold>false</bold>
      </font>
@@ -134,7 +134,7 @@
      <x>0</x>
      <y>0</y>
      <width>584</width>
-     <height>18</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -167,11 +167,25 @@
     <addaction name="action_open"/>
     <addaction name="action_save"/>
    </widget>
+   <widget class="QMenu" name="menu_6">
+    <property name="title">
+     <string>目标代码生成</string>
+    </property>
+    <addaction name="action_run4"/>
+   </widget>
+   <widget class="QMenu" name="menuDLC">
+    <property name="title">
+     <string>DLC</string>
+    </property>
+    <addaction name="action_run5"/>
+   </widget>
    <addaction name="menu_5"/>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
    <addaction name="menu_3"/>
    <addaction name="menu_4"/>
+   <addaction name="menu_6"/>
+   <addaction name="menuDLC"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="action">
@@ -205,6 +219,16 @@
    </property>
   </action>
   <action name="action_run3">
+   <property name="text">
+    <string>运行</string>
+   </property>
+  </action>
+  <action name="action_run4">
+   <property name="text">
+    <string>运行</string>
+   </property>
+  </action>
+  <action name="action_run5">
    <property name="text">
     <string>运行</string>
    </property>

@@ -54,7 +54,7 @@ def entry(content, regulation, start='program'):
     #             t.append(div)
     #         tokens.append(t)
     # tokenbox = TokenBox(tokens)
-    tokenbox = init_tokenbox1(content)
+    tokenbox = init_tokenbox(content)
     col = Collections(regulation, start)
     col.GET_FIRST_FOLLOW()
 
@@ -121,6 +121,6 @@ def entry(content, regulation, start='program'):
 
 
 # 测试
-content = read_file('../Lib3_Grammer/Token/target.reg')
-entry(content, '../Lib3_Grammer/test1')
+# content = read_file('../Lib3_Grammer/Token/target.reg')
+# entry(content, '../Lib3_Grammer/test1')
 
