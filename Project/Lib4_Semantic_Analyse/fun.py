@@ -200,12 +200,13 @@ def A(t, col, item, var_table, op_table, node, chain, f_str, errors):
                     errors.append(f'变量或常量未声明,第{t.Token[3]}行')
                     print(f'变量或常量未声明,第{t.Token[3]}行')
             op_table.add_node(node[:])
-            chain.merge_real(op_table, op_table.length)
+            if chain:
+                chain.merge_real(op_table, op_table.length)
+            var_table.add_obj(VarItem(name=node[3], field=f_str))
             t_var = node[3]
             node[0] = node[1] = node[2] = node[3] = ''
             node[2] = t_var
             node[3] = temp_obj.newtemp()
-            var_table.add_obj(VarItem(name=node[3], field=f_str))
             temp_obj.last = node[3]
         elif node[0] == 'para':
             if node[1]:

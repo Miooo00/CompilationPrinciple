@@ -1,15 +1,9 @@
-int a = 1 ;
-int sum_x,sum_y;
-int sum(int sum_x, int sum_y);
-
-main(){
-
-    a = sum(3, 4) ;
-    write(a);
-}
-
-int sum(int sum_x, int sum_y){
-    int result;
-    result = sum_x + sum_y;
-    return result;
-}
+main() {
+       int x, y, z;
+       x = 9;
+       y = 3;
+       z = x - y * y - x % 3;
+       write(x);
+       write(y);
+       write(z);
+       }

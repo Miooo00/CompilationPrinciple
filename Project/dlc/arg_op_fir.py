@@ -265,15 +265,14 @@ def exe_entry(input_str="i+i#"):
     # 测试样例文法
     str_table = ''
     str_process = ''
-    GS = [["A", "#E#"],
-          ["E", "E+T"],
-          ["E", "T"],
-          ["T", "T*F"],
-          ["T", "F"],
-          ["F", "P|F"],
-          ["F", "P"],
-          ["P", "(E)"],
-          ["P", "i"]]
+    GS = [
+        ['T', 't'],
+        ['T', 'e'],
+        ['T', '(F)'],
+        ['F', 'T+F'],
+        ['F', 'T'],
+        ['S', '#T#'],
+    ]
 
     print("进行构造的文法G[S]")
     for i in GS:
